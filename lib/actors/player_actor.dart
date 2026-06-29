@@ -31,6 +31,7 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
   final Vector2 _spawn;
 
   // Fixture references for contact identification.
+  late final Fixture _torso;
   late final Fixture _foot;
   late final Fixture _left;
   late final Fixture _right;
@@ -52,6 +53,8 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
   int _jumpsUsed = 0;
   int _facing = 1;
   bool _reached = false;
+  bool _climbing = false;
+  bool _passThrough = false;
   CharacterPose _pose = CharacterPose.idle;
 
   bool get _parkour => mechanics.contains(MechanicType.parkour);
@@ -71,7 +74,7 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
       userData: this,
     );
     final body = world.createBody(def);
-    body.createFixture(FixtureDef(torso, friction: 0.0, density: 1.1, restitution: 0.0));
+    _torso = body.createFixture(FixtureDef(torso, friction: 0.0, density: 1.1, restitution: 0.0));
 
     final footShape = PolygonShape()..setAsBox(0.22, 0.12, Vector2(0, 0.82), 0);
     _foot = body.createFixture(FixtureDef(footShape, isSensor: true));
@@ -105,24 +108,42 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
       _coyote = GameConfig.coyoteTime;
     }
 
-    final climbing = _canClimb && onLadder && (input.up || input.down);
     final firing = _canShoot && input.fireHeld;
 
-    if (climbing) {
-      _climb(jumpPressed);
+    // Climbing is a held state: it starts when up/down is pressed on a ladder
+    // and ends when the body leaves the ladder (or jumps off). While climbing,
+    // the body passes through terrain so the player can rise onto the ledge the
+    // ladder leads to instead of being blocked by it from below.
+    if (_climbing && !onLadder) {
+      _climbing = false;
+    } else if (!_climbing && _canClimb && onLadder && (input.up || input.down)) {
+      _climbing = true;
+    }
+
+    if (_climbing && jumpPressed) {
+      _climbing = false;
+      _setPassThrough(false);
+      body.linearVelocity = Vector2(_facing * GameConfig.wallJumpX * 0.5, -GameConfig.jumpImpulse);
+      _pose = CharacterPose.jump;
+    } else if (_climbing) {
+      _setPassThrough(true);
+      _climbMove();
       _pose = CharacterPose.climb;
-    } else if (inWater && _canSwim) {
-      _swim(dt);
-      _pose = CharacterPose.swim;
     } else {
-      _ground(dt, grounded: grounded, jumpPressed: jumpPressed);
-      final v = body.linearVelocity;
-      if (!grounded) {
-        _pose = v.y < 0 ? CharacterPose.jump : CharacterPose.fall;
-      } else if (firing) {
-        _pose = CharacterPose.aim;
+      _setPassThrough(false);
+      if (inWater && _canSwim) {
+        _swim(dt);
+        _pose = CharacterPose.swim;
       } else {
-        _pose = input.moveX.abs() > 0.1 ? CharacterPose.run : CharacterPose.idle;
+        _ground(dt, grounded: grounded, jumpPressed: jumpPressed);
+        final v = body.linearVelocity;
+        if (!grounded) {
+          _pose = v.y < 0 ? CharacterPose.jump : CharacterPose.fall;
+        } else if (firing) {
+          _pose = CharacterPose.aim;
+        } else {
+          _pose = input.moveX.abs() > 0.1 ? CharacterPose.run : CharacterPose.idle;
+        }
       }
     }
 
@@ -130,6 +151,19 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
       _shoot();
     }
     _breath(dt, inWater);
+  }
+
+  /// Toggles whether the body collides with terrain. Used so the player can
+  /// climb up *through* the platform a ladder leads to, then land on top of it.
+  void _setPassThrough(bool on) {
+    if (_passThrough == on) {
+      return;
+    }
+    _passThrough = on;
+    _torso.filterData = Filter()
+      ..categoryBits = 0x0001
+      ..maskBits = on ? 0x0000 : 0xFFFF
+      ..groupIndex = 0;
   }
 
   void _ground(double dt, {required bool grounded, required bool jumpPressed}) {
@@ -184,21 +218,19 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
     body.linearVelocity = Vector2(_approach(v.x, tvx, a), _approach(v.y, tvy, a));
   }
 
-  void _climb(bool jumpPressed) {
+  void _climbMove() {
     final input = game.input;
     final moveX = input.moveX;
     if (moveX.abs() > 0.05) {
       _facing = moveX > 0 ? 1 : -1;
-    }
-    if (jumpPressed) {
-      body.linearVelocity = Vector2(_facing * GameConfig.wallJumpX * 0.5, -GameConfig.jumpImpulse);
-      return;
     }
     final vy = input.up
         ? -GameConfig.climbSpeed
         : input.down
             ? GameConfig.climbSpeed
             : 0.0;
+    // Setting velocity directly each frame cancels gravity, so the player hangs
+    // on the ladder when not pressing up/down.
     body.linearVelocity = Vector2(moveX * GameConfig.climbSpeed * 0.5, vy);
   }
 

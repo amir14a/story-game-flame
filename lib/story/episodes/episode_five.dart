@@ -142,9 +142,9 @@ const LevelConfig _spireAscent = LevelConfig(
     Platform(x: 0, y: 12, width: 60, height: 2), // summit
   ],
   ladders: [
-    Ladder(x: 10, y: 91, width: 2.6, height: 21),
+    Ladder(x: 10, y: 89, width: 2.6, height: 23),
     Ladder(x: 50, y: 51, width: 2.6, height: 23),
-    Ladder(x: 14, y: 13, width: 2.6, height: 23),
+    Ladder(x: 14, y: 10, width: 2.6, height: 26),
   ],
   walls: [
     Wall(x: 34, y: 72, width: 1.6, height: 20), // wall-jump shaft between F1 and F2
