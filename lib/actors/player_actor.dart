@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 import '../art/character_art.dart';
+import '../art/lighting.dart';
 import '../core/game_config.dart';
+import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
 import '../story/models/dialogue.dart';
 import '../story/models/level_config.dart';
@@ -17,7 +19,7 @@ import 'projectile.dart';
 /// clearly separated behaviours — ground running + jumping, parkour wall-jumps,
 /// swimming, ladder climbing and shooting — and which behaviours are live is
 /// decided by the level's [mechanics] set.
-class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
+class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmitter {
   PlayerActor({
     required this.character,
     required this.mechanics,
@@ -63,6 +65,14 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
   bool get _canShoot => mechanics.contains(MechanicType.shoot);
 
   int get facing => _facing;
+
+  @override
+  Vector2 get lightWorldPosition => body.position;
+  @override
+  double get lightRadius => 8.5;
+  @override
+  Color get lightColor =>
+      character == Character.aria ? NeonPalette.ariaPrimary : NeonPalette.kadePrimary;
 
   @override
   Body createBody() {

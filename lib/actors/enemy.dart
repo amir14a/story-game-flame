@@ -4,8 +4,10 @@ import 'dart:ui';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 import '../art/character_art.dart';
+import '../art/lighting.dart';
 import '../art/vehicle_art.dart';
 import '../core/game_config.dart';
+import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
 import '../story/models/dialogue.dart';
 import '../story/models/level_config.dart';
@@ -13,7 +15,7 @@ import 'player_actor.dart';
 
 /// A Hollow hostile. One class, three behaviours selected by [EnemyKind]:
 /// a patrolling ground grunt, a hovering chase drone, and a pursuing rider.
-class Enemy extends BodyComponent<NeonEchoGame> with ContactCallbacks {
+class Enemy extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmitter {
   Enemy({required this.kind, required Vector2 spawn, this.patrolHalf = 4})
       : _spawn = spawn.clone(),
         _homeX = spawn.x {
@@ -35,6 +37,13 @@ class Enemy extends BodyComponent<NeonEchoGame> with ContactCallbacks {
   int _facing = -1;
 
   bool get isDead => health <= 0;
+
+  @override
+  Vector2 get lightWorldPosition => body.position;
+  @override
+  double get lightRadius => kind == EnemyKind.grunt ? 2.6 : 3.6;
+  @override
+  Color get lightColor => NeonPalette.hollowRed;
 
   @override
   Body createBody() {

@@ -8,6 +8,7 @@ import '../../actors/enemy.dart';
 import '../../actors/pickup.dart';
 import '../../actors/player_actor.dart';
 import '../../actors/vehicles.dart';
+import '../../art/lighting.dart';
 import '../../core/game_config.dart';
 import '../../core/palette.dart';
 import '../../story/models/level_config.dart';
@@ -72,6 +73,9 @@ class LevelScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
 
     player = _spawnPlayer();
     await add(player); // ensure the body exists before the camera follows it
+
+    // The lighting pass renders last (on top of everything in the world).
+    add(LightingLayer());
 
     game.state.beginLevel(
       character: config.character,

@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flame_forge2d/flame_forge2d.dart';
 
+import '../art/lighting.dart';
 import '../art/neon.dart';
 import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
@@ -11,7 +12,7 @@ import 'player_actor.dart';
 
 /// A collectible sensor: air pockets refill breath, coins and clue markers push
 /// a short story note to the HUD. Removes itself once collected.
-class Pickup extends BodyComponent<NeonEchoGame> with ContactCallbacks {
+class Pickup extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmitter {
   Pickup({required this.kind, required Vector2 spawn, this.note}) : _spawn = spawn.clone() {
     renderBody = false;
   }
@@ -27,6 +28,13 @@ class Pickup extends BodyComponent<NeonEchoGame> with ContactCallbacks {
         PickupKind.coin => NeonPalette.amber,
         PickupKind.marker => NeonPalette.signalGreen,
       };
+
+  @override
+  Vector2 get lightWorldPosition => body.position;
+  @override
+  double get lightRadius => 3.2;
+  @override
+  Color get lightColor => _color;
 
   @override
   Body createBody() {

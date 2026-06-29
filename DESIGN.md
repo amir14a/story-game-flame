@@ -110,14 +110,25 @@ All visuals are vector, drawn directly to the `Canvas`.
 
 * `neon.dart` — reusable neon primitives: glowing strokes, fills with bloom,
   gradient skies, scanlines.
-* `character_art.dart` — `CharacterArtist` draws Kade and Aria (and enemies) as
-  clean vector figures with neon rim-light, posed from a few animation params.
+* `character_art.dart` — `CharacterArtist` draws the figures as clean vector
+  forms with neon rim-light, posed from a few animation params. Kade and Aria
+  have **distinct silhouettes** (a per-character `_Build`): Kade is taller and
+  broad-shouldered with cropped hair, a hood collar and a courier satchel; Aria
+  is slighter with a pinched waist, a fringe, a long swaying ponytail, a tunic
+  hem and a hip data-deck.
 * `vehicle_art.dart` — car and motorcycle vector art.
-* `city/` — `CityBackdrop` (multi-layer parallax skyline per `DistrictTheme`),
-  `NeonSigns`, `Rain`, `WaterSurface`.
+* `lighting.dart` — the `LightEmitter` mixin and `LightingLayer`: a real 2D
+  lighting pass. It lays a per-district ambient "night" veil over the visible
+  world (lighter in flashbacks), carves soft pools of visibility out of it at
+  every emitter via `BlendMode.dstOut`, then adds an additive coloured cast.
+  The player, enemies, pickups, the goal beacon and vehicle headlamps all emit
+  light.
+* `city/` — `CityBackdrop` (multi-layer parallax skyline per `DistrictTheme`,
+  plus rain, stars, underwater caustics/bubbles and a vignette).
 
 Actors draw their own art in `render()` (the Forge2D `BodyComponent` canvas is in
 world/metre units, centred on the body), so the figures track physics exactly.
+The `LightingLayer` is added last in each scene so it composites over everything.
 
 ### `ui/`
 Flutter overlays registered in `GameWidget.overlayBuilderMap`.

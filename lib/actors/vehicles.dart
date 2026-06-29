@@ -2,8 +2,10 @@ import 'dart:ui';
 
 import 'package:flame_forge2d/flame_forge2d.dart';
 
+import '../art/lighting.dart';
 import '../art/vehicle_art.dart';
 import '../core/game_config.dart';
+import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
 import '../story/models/dialogue.dart';
 import '../story/models/level_config.dart';
@@ -22,7 +24,7 @@ double _approach(double current, double target, double maxDelta) {
 /// a rounded (circle) collider so it rolls smoothly over the ground chain. The
 /// player throttles with right/left (or the joystick), hops with jump, and — on
 /// the bike — fires forward.
-abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCallbacks {
+abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmitter {
   VehicleActor({
     required this.character,
     required this.mechanics,
@@ -47,6 +49,13 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
   bool _reached = false;
 
   bool get _canShoot => mechanics.contains(MechanicType.shoot);
+
+  @override
+  Vector2 get lightWorldPosition => body.position;
+  @override
+  double get lightRadius => 9.0;
+  @override
+  Color get lightColor => NeonPalette.cyan;
 
   @override
   Body createBody() {

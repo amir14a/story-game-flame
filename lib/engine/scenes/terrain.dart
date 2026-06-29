@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flame_forge2d/flame_forge2d.dart';
 
 import '../../actors/markers.dart';
+import '../../art/lighting.dart';
 import '../../art/neon.dart';
 import '../../core/palette.dart';
 import '../neon_echo_game.dart';
@@ -245,13 +246,20 @@ class HazardBody extends BodyComponent<NeonEchoGame> {
 }
 
 /// The level-completion trigger: a glowing beacon tagged [GoalMarker].
-class GoalBody extends BodyComponent<NeonEchoGame> {
+class GoalBody extends BodyComponent<NeonEchoGame> with LightEmitter {
   GoalBody({required Vector2 center}) : _center = center.clone() {
     renderBody = false;
   }
 
   final Vector2 _center;
   double _t = 0;
+
+  @override
+  Vector2 get lightWorldPosition => _center;
+  @override
+  double get lightRadius => 6.0;
+  @override
+  Color get lightColor => NeonPalette.signalGreen;
 
   @override
   Body createBody() {
