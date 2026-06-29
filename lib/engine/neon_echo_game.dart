@@ -1,5 +1,6 @@
 import 'package:flame/events.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show KeyEventResult;
 
@@ -108,8 +109,46 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   };
   static final _jump = {LogicalKeyboardKey.space};
 
+  // ---- debug cheat: the Konami code unlocks every episode ----
+  static final List<LogicalKeyboardKey> _cheatSequence = [
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowUp,
+    LogicalKeyboardKey.arrowDown,
+    LogicalKeyboardKey.arrowDown,
+    LogicalKeyboardKey.arrowLeft,
+    LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.arrowLeft,
+    LogicalKeyboardKey.arrowRight,
+    LogicalKeyboardKey.keyB,
+    LogicalKeyboardKey.keyA,
+  ];
+  final List<LogicalKeyboardKey> _cheatBuffer = [];
+
+  /// In debug builds only, watch for the Konami code and unlock all episodes.
+  void _checkCheat(KeyEvent event) {
+    if (!kDebugMode || event is! KeyDownEvent) {
+      return;
+    }
+    _cheatBuffer.add(event.logicalKey);
+    if (_cheatBuffer.length > _cheatSequence.length) {
+      _cheatBuffer.removeAt(0);
+    }
+    if (_cheatBuffer.length == _cheatSequence.length) {
+      for (var i = 0; i < _cheatSequence.length; i++) {
+        if (_cheatBuffer[i] != _cheatSequence[i]) {
+          return;
+        }
+      }
+      _cheatBuffer.clear();
+      state.unlockAll(story.episodeCount);
+      state.showToast('CHEAT UNLOCKED — all episodes available');
+    }
+  }
+
   @override
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    _checkCheat(event);
+
     // Pause toggle on key-down.
     if (event is KeyDownEvent &&
         (event.logicalKey == LogicalKeyboardKey.escape ||

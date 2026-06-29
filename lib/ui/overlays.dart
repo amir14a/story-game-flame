@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 
 import '../core/overlay_ids.dart';
@@ -57,6 +58,11 @@ class MainMenuOverlay extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(color: NeonPalette.textDim, fontSize: 11, height: 1.6, letterSpacing: 1),
             ),
+            if (kDebugMode) ...[
+              const SizedBox(height: 16),
+              neonTag('DEBUG CHEAT  ·  ↑ ↑ ↓ ↓ ← → ← →  B  A  unlocks all episodes',
+                  color: NeonPalette.amber),
+            ],
           ],
         ),
       ),
@@ -74,7 +80,6 @@ class EpisodeSelectOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final episodes = game.story.episodes;
-    final unlocked = game.state.unlockedEpisode;
     return NeonScaffold(
       accent: NeonPalette.magenta,
       child: Padding(
@@ -92,22 +97,54 @@ class EpisodeSelectOverlay extends StatelessWidget {
             const SizedBox(height: 18),
             Expanded(
               child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    for (final ep in episodes)
-                      _EpisodeCard(
-                        episode: ep,
-                        locked: ep.number > unlocked,
-                        onTap: () => game.director.startEpisode(ep.number),
-                      ),
-                  ],
+                // Rebuilds when unlockedEpisode changes (e.g. the debug cheat).
+                child: ListenableBuilder(
+                  listenable: game.state,
+                  builder: (context, _) {
+                    final unlocked = game.state.unlockedEpisode;
+                    return Wrap(
+                      spacing: 16,
+                      runSpacing: 16,
+                      children: [
+                        for (final ep in episodes)
+                          _EpisodeCard(
+                            episode: ep,
+                            locked: ep.number > unlocked,
+                            onTap: () => game.director.startEpisode(ep.number),
+                          ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
+            if (kDebugMode) const _CheatHint(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A debug-only hint describing the unlock-all cheat code.
+class _CheatHint extends StatelessWidget {
+  const _CheatHint();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          neonTag('DEBUG', color: NeonPalette.amber),
+          const SizedBox(width: 10),
+          const Flexible(
+            child: Text(
+              'Cheat: press  ↑ ↑ ↓ ↓ ← → ← →  B  A  to unlock all episodes',
+              style: TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 1),
+            ),
+          ),
+        ],
       ),
     );
   }

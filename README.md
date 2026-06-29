@@ -48,6 +48,12 @@ The game reads **keyboard** (desktop/web) and **on-screen touch controls**
 Cutscenes, dialogue, the menu and the episode-select screen are Flutter overlays —
 tap / click **Continue** to advance.
 
+### Debug cheat
+
+In **debug builds only**, the classic Konami code unlocks every episode:
+`↑ ↑ ↓ ↓ ← → ← → B A`. The menu and episode-select screens show a hint for it.
+It is compiled out of release builds (`kDebugMode`).
+
 ---
 
 ## Running the project

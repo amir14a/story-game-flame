@@ -60,6 +60,15 @@ class GameState extends ChangeNotifier {
 
   bool get isDead => health <= 0;
 
+  /// Unlocks every episode (used by the debug-only cheat code).
+  void unlockAll(int episodeCount) {
+    if (unlockedEpisode >= episodeCount) {
+      return;
+    }
+    unlockedEpisode = episodeCount;
+    notifyListeners();
+  }
+
   void setBreath(double value) {
     breath = value.clamp(0, maxBreath);
   }
