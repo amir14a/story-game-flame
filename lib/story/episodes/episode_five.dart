@@ -154,19 +154,27 @@ LevelConfig _countingStarsFlashback() {
     flashback: true,
     objective: 'Walk out to the edge and count the stars',
     bannerLine: 'Some promises you walk to.',
-    worldWidth: 48,
+    worldWidth: 54,
     worldHeight: 22,
     killY: 20,
     start: const Pt(4, 11),
-    goal: const Pt(42, 11),
+    goal: const Pt(46, 11),
     goalLabel: 'THE EDGE',
-    platforms: const [Platform(x: 0, y: 14, width: 46, height: 8)],
+    platforms: const [Platform(x: 0, y: 14, width: 52, height: 8)],
+    npcs: const [
+      NpcSpawn(NpcKind.james, x: 42, y: 14, facing: -1, lines: [
+        DialogueLine(Speakers.youngJames, 'About time. Best seat in the Sink, right here. Budge in.'),
+        DialogueLine(Speakers.youngMillie, 'One… two… three…'),
+        DialogueLine(Speakers.youngJames, 'Mum says that bright stubborn one\'s yours.'),
+        DialogueLine(Speakers.youngMillie, 'Then I\'ll always be up there. Even if I\'m not right here.'),
+      ]),
+    ],
     pickups: const [
-      PickupSpawn(PickupKind.marker, x: 42, y: 11, note: '"One… two… three…" Two small voices, counting other people\'s windows like a sky.'),
+      PickupSpawn(PickupKind.marker, x: 22, y: 11, note: 'Two small voices, counting other people\'s windows like a sky.'),
     ],
     dialogueTriggers: const [
-      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngMillie, 'Budge up, James. I can\'t see the good ones from here.')]),
-      DialogueTrigger(x: 30, lines: [DialogueLine(Speakers.mara, '(from the window) That one\'s yours, Millie. The bright stubborn one.')]),
+      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngMillie, 'Wait up — I can\'t see the good ones from back here!')]),
+      DialogueTrigger(x: 28, lines: [DialogueLine(Speakers.mara, '(from the window) Stay where I can see you both.')]),
     ],
   );
 }

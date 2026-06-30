@@ -141,31 +141,39 @@ LevelConfig _craneFlashback() {
     theme: DistrictTheme.lowtownNight,
     mechanics: const {MechanicType.run, MechanicType.parkour},
     flashback: true,
-    objective: 'Catch up to your brother at the washing-lines',
-    bannerLine: 'Tag, you\'re it.',
-    worldWidth: 110,
+    objective: 'Catch up to James at the washing-lines',
+    bannerLine: 'Tag — chase James down. He always stops to gloat.',
+    worldWidth: 116,
     worldHeight: 28,
     killY: 24,
     start: const Pt(4, 9),
-    goal: const Pt(102, 8),
+    goal: const Pt(106, 8),
     goalLabel: 'THE WASHING-LINES',
     platforms: [
       ...Build.roofRun(x0: 0, count: 7, width: 9, gap: 4, baseY: 12, vary: 2.4),
-      Platform(x: 96, y: 10, width: 14, height: 16),
+      Platform(x: 96, y: 10, width: 18, height: 16),
     ],
     walls: const [Wall(x: 58, y: 3, width: 1.6, height: 8)],
     checkpoints: const [Pt(36, 10), Pt(72, 10)],
     pickups: const [
       PickupSpawn(PickupKind.coin, x: 40, y: 11, note: 'A folded crane on the ledge. Mara taught her these.'),
-      PickupSpawn(PickupKind.marker, x: 102, y: 8, note: 'Gotcha! "If we ever get lost, leave a trail of these."'),
+    ],
+    npcs: const [
+      NpcSpawn(NpcKind.james, x: 102, y: 10, facing: -1, lines: [
+        DialogueLine(Speakers.youngJames, 'Beat you AGAIN. Told you. Okay, okay — show me the bird thing.'),
+        DialogueLine(Speakers.youngMillie, 'Give me your hands. Fold here… and here… see? A crane.'),
+        DialogueLine(Speakers.youngMillie, 'If we ever get lost, leave a trail of these. I\'ll always find the next one.'),
+        DialogueLine(Speakers.youngJames, 'That\'s a dumb plan.'),
+        DialogueLine(Speakers.youngMillie, 'It\'s a great plan. Pinky promise.'),
+      ]),
     ],
     dialogueTriggers: const [
-      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngMillie, 'Too slow! Mum\'s got tea on!')]),
-      DialogueTrigger(x: 50, lines: [
-        DialogueLine(Speakers.youngJames, 'Mil, the gap\'s too — Millie!'),
-        DialogueLine(Speakers.youngMillie, 'Trust the jump, big bro!'),
+      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngJames, '(ahead) Can\'t catch me, slow-bones!')]),
+      DialogueTrigger(x: 48, lines: [
+        DialogueLine(Speakers.youngJames, '(ahead) Mind the gap, Mil — or don\'t, ha!'),
+        DialogueLine(Speakers.youngMillie, 'Trust the jump. Always trust the jump.'),
       ]),
-      DialogueTrigger(x: 90, lines: [DialogueLine(Speakers.mara, '(distant) Come in, you two. Count the stars with me.')]),
+      DialogueTrigger(x: 88, lines: [DialogueLine(Speakers.mara, '(distant) Come in, you two. Count the stars with me.')]),
     ],
   );
 }

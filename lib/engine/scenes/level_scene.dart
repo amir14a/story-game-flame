@@ -103,9 +103,11 @@ class LevelScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
       case VehicleKind.onFoot:
         return PlayerActor(character: config.character, mechanics: config.mechanics, spawn: spawn);
       case VehicleKind.car:
-        return CarActor(character: config.character, mechanics: config.mechanics, spawn: spawn);
+        return CarActor(
+            character: config.character, mechanics: config.mechanics, spawn: spawn, companion: config.companion);
       case VehicleKind.bike:
-        return BikeActor(character: config.character, mechanics: config.mechanics, spawn: spawn);
+        return BikeActor(
+            character: config.character, mechanics: config.mechanics, spawn: spawn, companion: config.companion);
     }
   }
 
