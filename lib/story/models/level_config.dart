@@ -132,6 +132,47 @@ class PickupSpawn {
 }
 
 // ---------------------------------------------------------------------------
+// In-game narrative.
+// ---------------------------------------------------------------------------
+
+/// A story character the player can meet inside a level (Books, Cray, Saint, or
+/// Millie). Drives the figure's art and the face-to-face exchange.
+enum NpcKind { books, cray, saint, millie }
+
+/// An invisible zone that fires a dialogue sequence the first time the player
+/// crosses it. Non-[blocking] lines show as ambient subtitles while play
+/// continues; [blocking] lines pop up a comm card and soft-pause the action.
+class DialogueTrigger {
+  const DialogueTrigger({
+    required this.x,
+    required this.lines,
+    this.width = 2.5,
+    this.blocking = false,
+  });
+  final double x;
+  final double width;
+  final List<DialogueLine> lines;
+  final bool blocking;
+}
+
+/// A character standing in the level. Reaching them triggers a (blocking)
+/// face-to-face meeting.
+class NpcSpawn {
+  const NpcSpawn(
+    this.kind, {
+    required this.x,
+    required this.y,
+    this.lines = const [],
+    this.facing = -1,
+  });
+  final NpcKind kind;
+  final double x;
+  final double y;
+  final List<DialogueLine> lines;
+  final int facing;
+}
+
+// ---------------------------------------------------------------------------
 // The level itself.
 // ---------------------------------------------------------------------------
 
@@ -160,6 +201,10 @@ class LevelConfig {
     this.hazards = const [],
     this.enemies = const [],
     this.pickups = const [],
+    this.checkpoints = const [],
+    this.dialogueTriggers = const [],
+    this.npcs = const [],
+    this.killY,
     this.bannerLine,
   });
 
@@ -194,8 +239,22 @@ class LevelConfig {
   final List<EnemySpawn> enemies;
   final List<PickupSpawn> pickups;
 
+  /// Respawn points (metres). On death the player returns to the last one
+  /// passed, instead of restarting the whole — possibly 10-minute — level.
+  final List<Pt> checkpoints;
+
+  /// In-game dialogue zones and meet-able characters.
+  final List<DialogueTrigger> dialogueTriggers;
+  final List<NpcSpawn> npcs;
+
+  /// Anything that falls below this world-Y is reliably killed (a death plane).
+  /// Defaults to a little past [worldHeight] when null.
+  final double? killY;
+
   /// Optional short line shown on the in-level intro banner.
   final String? bannerLine;
+
+  double get deathPlaneY => killY ?? worldHeight + 6;
 
   bool has(MechanicType m) => mechanics.contains(m);
 }

@@ -143,7 +143,7 @@ class Enemy extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmit
         canvas.save();
         canvas.scale(_facing.toDouble(), 1);
         VehicleArtist.drawBike(canvas,
-            character: Character.kade, wheelSpin: _t * 12, hostile: true);
+            character: Character.james, wheelSpin: _t * 12, hostile: true);
         canvas.restore();
     }
   }

@@ -52,7 +52,7 @@ No Flame/physics imports. This is the script.
   * `Speaker`, `DialogueLine`
   * `CutsceneBeat`, `Cutscene` (a titled sequence of narration + dialogue + a mood)
   * `MechanicType` (`run`, `parkour`, `drive`, `bike`, `swim`, `climb`, `shoot`)
-  * `Character` (`kade` / `aria`) and `DistrictTheme`
+  * `Character` (`james` / `millie`) and `DistrictTheme`
   * `LevelConfig` — a fully declarative level: terrain features, entities, the
     playable character, enabled mechanics, start/goal, theme and a HUD objective.
   * `Episode`, `StoryPhase` (`CutscenePhase` | `LevelPhase`) — an episode is just
@@ -88,7 +88,7 @@ The Flame runtime.
 ### `actors/`
 Everything that has a physics `Body`.
 
-* `player_actor.dart` — `PlayerActor`, the on-foot body (Kade or Aria). Its
+* `player_actor.dart` — `PlayerActor`, the on-foot body (James or Millie). Its
   locomotion is split into clearly separated behaviours — ground running +
   jumping, parkour wall-slide/wall-jump, free-swim + breath, ladder climbing
   (velocity-driven so gravity is cancelled while gripping), and fire-rate-gated
@@ -111,9 +111,9 @@ All visuals are vector, drawn directly to the `Canvas`.
 * `neon.dart` — reusable neon primitives: glowing strokes, fills with bloom,
   gradient skies, scanlines.
 * `character_art.dart` — `CharacterArtist` draws the figures as clean vector
-  forms with neon rim-light, posed from a few animation params. Kade and Aria
-  have **distinct silhouettes** (a per-character `_Build`): Kade is taller and
-  broad-shouldered with cropped hair, a hood collar and a courier satchel; Aria
+  forms with neon rim-light, posed from a few animation params. James and Millie
+  have **distinct silhouettes** (a per-character `_Build`): James is taller and
+  broad-shouldered with cropped hair, a hood collar and a courier satchel; Millie
   is slighter with a pinched waist, a fringe, a long swaying ponytail, a tunic
   hem and a hip data-deck.
 * `vehicle_art.dart` — car and motorcycle vector art.
@@ -157,3 +157,28 @@ the world edges.
   interchangeable and actors never care which one is driving.
 * **No assets** — procedural vector art keeps the build tiny and crisp, and keeps
   art logic testable as plain Dart.
+
+## In-game narrative & gameplay systems (the James & Millie rewrite)
+
+* **DialogueRunner** (`engine/narrative/`) — a `ChangeNotifier` with two registers:
+  non-blocking **subtitles** that auto-advance on a reading timer while you keep
+  playing, and **blocking** comm pop-ups / meetings that soft-pause the engine and
+  wait for the action key (or a tap). The `DialogueOverlay` renders both.
+* **Trigger zones & NPCs** — `LevelConfig.dialogueTriggers` are x-zones fired once
+  as you cross them (`LevelScene.update`); `LevelConfig.npcs` place meet-able
+  `StoryNpc`s (Books / Cray / Saint / Millie) that start a face-to-face exchange on
+  approach. Characters thus meet *inside* the levels, not only between them.
+* **Combined mechanics** — every episode strings several mechanics through one (or
+  two) long, **checkpointed** levels. The on-foot `PlayerActor` enables run / parkour
+  / climb / swim / shoot from `LevelConfig.mechanics`; driving/riding episodes add a
+  vehicle section plus an on-foot section.
+* **Checkpoints + death plane** — `PlayerActor` tracks the last checkpoint passed and
+  a reliable **position-based** death plane (`killY`). A fall or hazard costs one
+  health and respawns at the checkpoint (no tunnelling, no infinite-fall loop).
+* **Wheeled vehicles** — `VehicleActor` is a freely-rotating chassis on two sprung
+  wheels (`WheelJoint`), driven by a horizontal force. It **leans into climbs and
+  downhills**, **never jumps**, and rides continuous gap-free roads.
+* **Keyboard-first UI** — `KeyboardMenu` makes every menu arrow-key + Enter
+  navigable; cutscenes and comm pop-ups advance on Enter / Space / J. The on-screen
+  `Controls` are mounted once for the whole session and shown/hidden via an `active`
+  flag, so they can never get lost on a scene change.

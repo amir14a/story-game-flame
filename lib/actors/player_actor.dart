@@ -72,7 +72,13 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, Lig
   double get lightRadius => 8.5;
   @override
   Color get lightColor =>
-      character == Character.aria ? NeonPalette.ariaPrimary : NeonPalette.kadePrimary;
+      character == Character.millie ? NeonPalette.milliePrimary : NeonPalette.jamesPrimary;
+
+  /// Respawn data, configured by the [LevelScene].
+  List<Vector2> checkpoints = const [];
+  double deathPlaneY = 1e9;
+  late Vector2 _respawn = _spawn.clone();
+  double _respawnLock = 0;
 
   @override
   Body createBody() {
@@ -106,6 +112,19 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, Lig
     if (_coyote > 0) _coyote -= dt;
     if (_invuln > 0) _invuln -= dt;
     if (_fireCd > 0) _fireCd -= dt;
+    if (_respawnLock > 0) _respawnLock -= dt;
+
+    // Track the last checkpoint passed (checkpoints are left-to-right).
+    for (final cp in checkpoints) {
+      if (body.position.x >= cp.x - 0.5) {
+        _respawn = cp;
+      }
+    }
+    // Reliable death plane (a position check can't be tunnelled through).
+    if (body.position.y > deathPlaneY) {
+      _fell();
+      return;
+    }
 
     final input = game.input;
     final jumpPressed = input.consumeJump();
@@ -219,13 +238,25 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, Lig
       _facing = moveX > 0 ? 1 : -1;
     }
     final tvx = moveX * GameConfig.swimSpeed;
+    // Idle target is 0 (float in place), NOT a buoyant rise — the upward drift
+    // is what made the character breach the surface and bob in a loop.
     final tvy = input.up
         ? -GameConfig.swimSpeed
         : input.down
             ? GameConfig.swimSpeed
-            : -1.2; // gentle buoyant drift upward
+            : 0.0;
     final a = GameConfig.swimAccel * dt;
-    body.linearVelocity = Vector2(_approach(v.x, tvx, a), _approach(v.y, tvy, a));
+    var nvx = _approach(v.x, tvx, a);
+    var nvy = _approach(v.y, tvy, a);
+
+    // Don't let the swimmer launch out of the water: pin them just under the
+    // surface. To leave the water they climb out via the rigging/ladders.
+    final surface = _waterSurfaceY;
+    if (body.position.y <= surface + 0.05 && nvy < 0) {
+      nvy = 0;
+      body.setTransform(Vector2(body.position.x, surface + 0.06), body.angle);
+    }
+    body.linearVelocity = Vector2(nvx, nvy);
   }
 
   void _climbMove() {
@@ -291,12 +322,27 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, Lig
 
   void refillBreath() => game.state.setBreath(game.state.maxBreath);
 
-  void _killInstant() {
-    if (game.state.isDead || _reached) {
+  /// A fall or hazard: lose a point of health and respawn at the last
+  /// checkpoint, instead of failing the whole (possibly 10-minute) level. If
+  /// that empties the health bar, it's game over.
+  void _fell() {
+    if (_respawnLock > 0 || game.state.isDead || _reached) {
       return;
     }
-    game.state.damage(game.state.maxHealth);
-    game.director.onPlayerDied();
+    _respawnLock = 0.6;
+    _invuln = GameConfig.hitInvulnerability;
+    game.state.damage(1);
+    if (game.state.isDead) {
+      game.director.onPlayerDied();
+      return;
+    }
+    _setPassThrough(false);
+    _climbing = false;
+    _jumpsUsed = 0;
+    body.setTransform(_respawn.clone(), 0);
+    body.linearVelocity = Vector2.zero();
+    body.angularVelocity = 0;
+    game.state.showToast('Checkpoint');
   }
 
   void _reachGoal() {
@@ -328,7 +374,7 @@ class PlayerActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, Lig
     } else if (other is LadderMarker) {
       _ladderContacts++;
     } else if (other is HazardMarker) {
-      _killInstant();
+      _fell();
     } else if (other is GoalMarker) {
       _reachGoal();
     }

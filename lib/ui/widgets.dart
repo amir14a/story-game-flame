@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/palette.dart';
 
@@ -140,7 +141,8 @@ class GlitchTitle extends StatelessWidget {
   }
 }
 
-/// A neon-bordered button with a soft glow.
+/// A neon-bordered button with a soft glow. [focused] is set by [KeyboardMenu]
+/// to show which item the keyboard is on.
 class NeonButton extends StatefulWidget {
   const NeonButton({
     super.key,
@@ -149,6 +151,7 @@ class NeonButton extends StatefulWidget {
     this.color = NeonPalette.cyan,
     this.primary = false,
     this.enabled = true,
+    this.focused = false,
     this.width = 280,
   });
 
@@ -157,6 +160,7 @@ class NeonButton extends StatefulWidget {
   final Color color;
   final bool primary;
   final bool enabled;
+  final bool focused;
   final double width;
 
   @override
@@ -169,7 +173,8 @@ class _NeonButtonState extends State<NeonButton> {
   @override
   Widget build(BuildContext context) {
     final color = widget.enabled ? widget.color : NeonPalette.textDim;
-    final glow = _down ? 0.9 : 0.45;
+    final active = _down || widget.focused;
+    final glow = active ? 0.9 : 0.4;
     return GestureDetector(
       onTapDown: widget.enabled ? (_) => setState(() => _down = true) : null,
       onTapUp: widget.enabled ? (_) => setState(() => _down = false) : null,
@@ -180,16 +185,17 @@ class _NeonButtonState extends State<NeonButton> {
         width: widget.width,
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
         decoration: BoxDecoration(
-          color: (widget.primary ? color : NeonPalette.voidBlack).withValues(alpha: widget.primary ? 0.18 : 0.55),
+          color: ((widget.primary || widget.focused) ? color : NeonPalette.voidBlack)
+              .withValues(alpha: (widget.primary || widget.focused) ? 0.2 : 0.55),
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color, width: 2),
+          border: Border.all(color: color, width: widget.focused ? 3 : 2),
           boxShadow: [
-            BoxShadow(color: color.withValues(alpha: glow), blurRadius: _down ? 24 : 14, spreadRadius: 1),
+            BoxShadow(color: color.withValues(alpha: glow), blurRadius: active ? 26 : 12, spreadRadius: 1),
           ],
         ),
         child: Center(
           child: Text(
-            widget.label,
+            widget.focused ? '▸  ${widget.label}  ◂' : widget.label,
             textAlign: TextAlign.center,
             style: TextStyle(
               color: widget.enabled ? NeonPalette.textBright : NeonPalette.textDim,
@@ -201,6 +207,117 @@ class _NeonButtonState extends State<NeonButton> {
         ),
       ),
     );
+  }
+}
+
+/// A single entry in a [KeyboardMenu].
+class MenuAction {
+  const MenuAction(this.label, this.onSelect,
+      {this.color = NeonPalette.cyan, this.primary = false, this.enabled = true, this.width = 300});
+  final String label;
+  final VoidCallback onSelect;
+  final Color color;
+  final bool primary;
+  final bool enabled;
+  final double width;
+}
+
+/// A column/row of [NeonButton]s that is fully keyboard-navigable: arrow keys
+/// (and Tab) move the highlight, Enter/Space activate. Mouse/touch still work.
+class KeyboardMenu extends StatefulWidget {
+  const KeyboardMenu({super.key, required this.actions, this.axis = Axis.vertical, this.spacing = 12});
+  final List<MenuAction> actions;
+  final Axis axis;
+  final double spacing;
+
+  @override
+  State<KeyboardMenu> createState() => _KeyboardMenuState();
+}
+
+class _KeyboardMenuState extends State<KeyboardMenu> {
+  final FocusNode _node = FocusNode();
+  int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.actions.indexWhere((a) => a.enabled);
+    if (_index < 0) _index = 0;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _node.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
+
+  void _move(int delta) {
+    if (widget.actions.isEmpty) return;
+    var i = _index;
+    for (var step = 0; step < widget.actions.length; step++) {
+      i = (i + delta) % widget.actions.length;
+      if (i < 0) i += widget.actions.length;
+      if (widget.actions[i].enabled) break;
+    }
+    setState(() => _index = i);
+  }
+
+  void _activate() {
+    if (_index >= 0 && _index < widget.actions.length && widget.actions[_index].enabled) {
+      widget.actions[_index].onSelect();
+    }
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final k = event.logicalKey;
+    if (k == LogicalKeyboardKey.arrowDown || k == LogicalKeyboardKey.arrowRight || k == LogicalKeyboardKey.tab) {
+      _move(1);
+      return KeyEventResult.handled;
+    }
+    if (k == LogicalKeyboardKey.arrowUp || k == LogicalKeyboardKey.arrowLeft) {
+      _move(-1);
+      return KeyEventResult.handled;
+    }
+    if (k == LogicalKeyboardKey.enter || k == LogicalKeyboardKey.space || k == LogicalKeyboardKey.numpadEnter) {
+      _activate();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final buttons = <Widget>[];
+    for (var i = 0; i < widget.actions.length; i++) {
+      final a = widget.actions[i];
+      buttons.add(NeonButton(
+        label: a.label,
+        color: a.color,
+        primary: a.primary,
+        enabled: a.enabled,
+        focused: i == _index,
+        width: a.width,
+        onTap: () {
+          setState(() => _index = i);
+          a.onSelect();
+        },
+      ));
+    }
+    final spaced = <Widget>[];
+    for (var i = 0; i < buttons.length; i++) {
+      if (i > 0) {
+        spaced.add(SizedBox(width: widget.spacing, height: widget.spacing));
+      }
+      spaced.add(buttons[i]);
+    }
+    final list = widget.axis == Axis.vertical
+        ? Column(mainAxisSize: MainAxisSize.min, children: spaced)
+        : Row(mainAxisSize: MainAxisSize.min, children: spaced);
+    return Focus(focusNode: _node, autofocus: true, onKeyEvent: _onKey, child: list);
   }
 }
 

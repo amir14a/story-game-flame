@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/palette.dart';
 
 /// Which sibling a piece of content belongs to (drives art + colour).
-enum Character { kade, aria }
+enum Character { james, millie }
 
 /// A character (or narrator) who can speak a [DialogueLine].
 @immutable
@@ -20,13 +20,14 @@ class Speaker {
 /// Pre-defined speakers used across the screenplay.
 abstract final class Speakers {
   static const Speaker narrator = Speaker('', color: NeonPalette.textDim, italic: true);
-  static const Speaker kade = Speaker('KADE', color: NeonPalette.kadePrimary);
-  static const Speaker aria = Speaker('ARIA', color: NeonPalette.ariaPrimary);
-  static const Speaker youngAria = Speaker('ARIA (young)', color: NeonPalette.ariaSecondary);
-  static const Speaker youngKade = Speaker('KADE (young)', color: NeonPalette.kadeSecondary);
-  static const Speaker echo = Speaker('ECHO', color: NeonPalette.signalGreen);
-  static const Speaker pix = Speaker('PIX', color: NeonPalette.amber);
-  static const Speaker vex = Speaker('VEX', color: NeonPalette.hollowRed);
+  static const Speaker james = Speaker('JAMES', color: NeonPalette.jamesPrimary);
+  static const Speaker millie = Speaker('MILLIE', color: NeonPalette.milliePrimary);
+  static const Speaker youngMillie = Speaker('MILLIE (young)', color: NeonPalette.millieSecondary);
+  static const Speaker youngJames = Speaker('JAMES (young)', color: NeonPalette.jamesSecondary);
+  static const Speaker books = Speaker('BOOKS', color: NeonPalette.books);
+  static const Speaker cray = Speaker('CRAY', color: NeonPalette.cray);
+  static const Speaker saint = Speaker('SAINT', color: NeonPalette.saint);
+  static const Speaker mara = Speaker('MARA', color: NeonPalette.millieSecondary, italic: true);
 }
 
 /// A single line of spoken or narrated text.
@@ -53,7 +54,8 @@ enum CutsceneMood {
   victory,
 }
 
-/// A scripted, non-interactive story beat shown as a Flutter overlay.
+/// A scripted, full-screen story beat shown as a Flutter overlay between
+/// playable phases (episode intro / flashback intro / cliffhanger / finale).
 @immutable
 class Cutscene {
   const Cutscene({
@@ -65,19 +67,10 @@ class Cutscene {
     this.continueLabel = 'CONTINUE',
   });
 
-  /// e.g. `EPISODE 1` or `FLASHBACK`.
   final String title;
-
-  /// e.g. `LOWTOWN · RAIN`.
   final String location;
-
   final CutsceneMood mood;
-
-  /// Narration paragraphs shown above the dialogue.
   final List<String> narration;
-
-  /// Spoken lines, revealed one at a time.
   final List<DialogueLine> lines;
-
   final String continueLabel;
 }

@@ -1,10 +1,11 @@
 # NEON ECHO
 
 A 2D cyberpunk **story game** built with **Flutter**, **Flame**, and **Forge2D**.
-A brother — **Kade Vance** — hunts the neon-drowned sprawl of Nyx City for his
-missing sister, **Aria**, across five continuous episodes, each ending on a
-cliffhanger that opens the next. Between chapters the story falls back into the
-happy past, where you play as Aria herself.
+A brother — **James Vance** — hunts the drowned neon sprawl of **Verge City** for
+his missing sister **Millie**, across five continuous episodes, each ending on a
+cliffhanger that opens the next — and the closer he gets, the less she is the
+person he came to save. The story is told **inside the levels** (subtitles, comm
+pop-ups and face-to-face meetings), and in the **flashbacks** you play as Millie.
 
 * **Display:** Landscape
 * **Framework:** Flutter + Flame (`flame_forge2d` for 2D physics)
@@ -21,15 +22,19 @@ happy past, where you play as Aria herself.
 
 ## The five episodes
 
-| # | Title | District | Mechanics | Playable |
-| - | --- | --- | --- | --- |
-| 1 | Signal in the Rain | Lowtown rooftops | Running, Parkour | Kade · Aria (FB) |
-| 2 | Neon Highway | The Skyway | Driving | Kade · Aria (FB) |
-| 3 | The Drowned District | The Sunken District | Swimming, Climbing | Kade · Aria (FB) |
-| 4 | Steel Veins | The Steel Veins | Riding, Shooting | Kade · Aria (FB) |
-| 5 | The Spire | The Spire | Climbing, Parkour, Shooting | Kade |
+Every episode combines **several** mechanics across long, checkpointed, sectioned
+levels, and opens exactly where the last one cut away.
 
-*(FB = flashback. Aria is playable only in flashbacks.)*
+| # | Title | District | Mechanics combined | Playable |
+| - | --- | --- | --- | --- |
+| 1 | Breadcrumbs | The Sink | Run · Parkour · Climb · Shoot | James · Millie (FB) |
+| 2 | The Loop | The Loop | Drive · Shoot · Parkour · Climb | James · Millie (FB) |
+| 3 | Drowned Light | The Floodworks | Swim · Climb · Shoot · Run | James · Millie (FB) |
+| 4 | The Foundry | The Foundry | Ride · Shoot · Climb · Run | James · Millie (FB) |
+| 5 | Crown of Stars | The Apex | Climb · Parkour · Shoot · Swim | James · Millie (FB) |
+
+*(FB = flashback. Millie is playable only in flashbacks; James finds her, alive,
+at the very end of Episode 5.)*
 
 ## Controls
 
@@ -44,9 +49,17 @@ The game reads **keyboard** (desktop/web) and **on-screen touch controls**
 | Jump / vault | `Space` | **A** button |
 | Fire (shooting levels) | `J` / `K` / `Enter` | **B** button |
 | Pause | `Esc` / `P` | Pause icon |
+| Advance dialogue | `Enter` / `Space` / `J` | Tap |
+| Navigate menus | `↑` `↓` then `Enter` | Tap |
 
-Cutscenes, dialogue, the menu and the episode-select screen are Flutter overlays —
-tap / click **Continue** to advance.
+**Everything is keyboard-friendly:** menus, the episode-select screen and
+cutscenes are all driven with the arrow keys + Enter (and still work with mouse /
+touch). In-game story arrives as **ambient subtitles** while you play and **comm
+pop-ups / meetings** that soft-pause the action until you advance them.
+
+Death is forgiving on the long levels: falling off the world or hitting a hazard
+costs one health point and respawns you at the **last checkpoint** (a reliable
+death-plane, so a fall can never get stuck).
 
 ### Debug cheat
 

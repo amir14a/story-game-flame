@@ -10,8 +10,8 @@ import 'neon.dart';
 /// the physics body's origin.
 abstract final class VehicleArtist {
   static (Color, Color) _colors(Character c) => switch (c) {
-        Character.kade => (NeonPalette.kadePrimary, NeonPalette.kadeSecondary),
-        Character.aria => (NeonPalette.ariaPrimary, NeonPalette.ariaSecondary),
+        Character.james => (NeonPalette.jamesPrimary, NeonPalette.jamesSecondary),
+        Character.millie => (NeonPalette.milliePrimary, NeonPalette.millieSecondary),
       };
 
   /// A low, sleek courier car. Total length ~3.6m.

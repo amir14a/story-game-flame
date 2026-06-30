@@ -38,9 +38,9 @@ void main() {
   test('the sister (Aria) is only ever playable in flashbacks', () {
     for (final ep in story.episodes) {
       for (final phase in ep.phases) {
-        if (phase is LevelPhase && phase.config.character == Character.aria) {
+        if (phase is LevelPhase && phase.config.character == Character.millie) {
           expect(phase.config.flashback, isTrue,
-              reason: '${phase.config.id} plays Aria outside a flashback');
+              reason: '${phase.config.id} plays Millie outside a flashback');
         }
       }
     }

@@ -1,170 +1,171 @@
+import '../level_builders.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
 
-/// Episode 1 — "Signal in the Rain".
-/// Lowtown rooftops · Running + Parkour · Kade, then young Aria (flashback).
+/// Episode 1 — "Breadcrumbs".
+/// The Sink · James (run/parkour/climb/shoot), then young Millie (flashback).
 Episode buildEpisodeOne() {
-  return const Episode(
+  return Episode(
     number: 1,
-    title: 'Signal in the Rain',
-    tagline: 'LOWTOWN ROOFTOPS · RUN · PARKOUR',
+    title: 'Breadcrumbs',
+    tagline: 'THE SINK · RUN · PARKOUR · CLIMB · SHOOT',
     theme: DistrictTheme.rooftops,
     phases: [
-      // --- Intro cutscene -------------------------------------------------
-      CutscenePhase(
-        Cutscene(
-          title: 'EPISODE 1',
-          location: 'LOWTOWN · RAIN',
-          mood: CutsceneMood.present,
-          narration: [
-            'Rain has been falling on Lowtown for four months. About as long as '
-                'Aria has been gone.',
-            'Kade Vance still checks his wrist-deck every night. Tonight, for the '
-                'first time, it answers.',
-          ],
-          lines: [
-            DialogueLine(Speakers.echo,
-                'She’s alive, Kade. The courier on Rivet Row is carrying proof. '
-                'Catch him before The Hollow does.'),
-            DialogueLine(Speakers.echo, 'RUN.'),
-            DialogueLine(Speakers.kade,
-                'Four months of nothing. And now a ghost tells me to run.'),
-            DialogueLine(Speakers.kade, '…Fine. I run.'),
-          ],
-          continueLabel: 'CHASE THE COURIER',
-        ),
-      ),
-
-      // --- Main level: rooftop chase -------------------------------------
-      LevelPhase(_rooftopChase),
-
-      // --- Flashback intro -----------------------------------------------
-      CutscenePhase(
-        Cutscene(
-          title: 'FLASHBACK',
-          location: 'LOWTOWN ROOFTOPS · SIX YEARS AGO',
-          mood: CutsceneMood.flashback,
-          narration: [
-            'Before the silence. Before The Hollow. Two kids and a whole sky of '
-                'neon to run under.',
-          ],
-          lines: [
-            DialogueLine(Speakers.youngAria, 'Can’t catch me, slowpoke!'),
-            DialogueLine(Speakers.youngKade, 'Aria, the gap’s too — ARIA!'),
-            DialogueLine(Speakers.narrator, 'You are Aria. Chase your brother across the rooftops.'),
-          ],
-          continueLabel: 'PLAY AS ARIA',
-        ),
-      ),
-
-      // --- Flashback level: tag on the rooftops --------------------------
-      LevelPhase(_tagFlashback),
-
-      // --- Cliffhanger ----------------------------------------------------
-      CutscenePhase(
-        Cutscene(
-          title: 'EPISODE 1 — ENDING',
-          location: 'RIVET ROW · THE WATER TOWER',
-          mood: CutsceneMood.cliffhanger,
-          narration: [
-            'Kade corners the courier on the old water tower. The kid is shaking.',
-          ],
-          lines: [
-            DialogueLine(Speakers.pix,
-                'I never saw your face, okay? She’s in the Sunken District. '
-                'The Hollow’s got her at the Drowned Cathedral.'),
-            DialogueLine(Speakers.pix, 'Echo said you’d —'),
-            DialogueLine(Speakers.narrator,
-                'A red targeting laser blooms across Pix’s chest. A drone-sniper '
-                'on a far roof fires once. Pix drops.'),
-            DialogueLine(Speakers.narrator,
-                'The laser swings up and finds KADE. Alarms tear across Lowtown.'),
-            DialogueLine(Speakers.kade,
-                '(pockets the shard) Sunken District. Hold on, Aria.'),
-          ],
-          continueLabel: 'EPISODE 2 ▶',
-        ),
-      ),
+      const CutscenePhase(Cutscene(
+        title: 'EPISODE 1',
+        location: 'THE SINK · A FIRE-ESCAPE · NIGHT',
+        mood: CutsceneMood.present,
+        narration: [
+          'Six months of silence. Then a paper crane on the doorstep, folded in '
+              'Millie\'s hand, with three words inside: "Don\'t look for me."',
+          'A second crane is already gone — a street-kid is running with the chip '
+              'that was folded inside it. James goes after them.',
+        ],
+        lines: [
+          DialogueLine(Speakers.james, 'Six months. And now a paper bird.'),
+          DialogueLine(Speakers.james, '…Not this time, Mil. This time I follow the trail.'),
+        ],
+        continueLabel: 'CHASE THE COURIER',
+      )),
+      LevelPhase(_sinkChase()),
+      const CutscenePhase(Cutscene(
+        title: 'FLASHBACK',
+        location: 'A SINK ROOFTOP · SIXTEEN YEARS AGO',
+        mood: CutsceneMood.flashback,
+        narration: [
+          'Before the silence. Before any of it. Just two kids and a sky made of '
+              'other people\'s windows.',
+        ],
+        lines: [
+          DialogueLine(Speakers.youngMillie, 'Can\'t catch me, slow-bones!'),
+          DialogueLine(Speakers.narrator, 'You are Millie. Chase James across the rooftops to the washing-lines.'),
+        ],
+        continueLabel: 'PLAY AS MILLIE',
+      )),
+      LevelPhase(_craneFlashback()),
+      const CutscenePhase(Cutscene(
+        title: 'EPISODE 1 — ENDING',
+        location: 'RIVET ROW · THE HIGH ROOF',
+        mood: CutsceneMood.cliffhanger,
+        narration: [
+          'James corners the courier — a terrified kid, maybe ten.',
+        ],
+        lines: [
+          DialogueLine(Speakers.narrator, 'KID: "She paid me to slow you down! That\'s all, I swear—"'),
+          DialogueLine(Speakers.narrator,
+              'A red dot finds the kid\'s chest. A Mire sniper fires once. The roof '
+              'gives way under the impact and the fight.'),
+          DialogueLine(Speakers.james, '(falling) Floodworks. She\'s in the Floodworks—'),
+        ],
+        continueLabel: 'EPISODE 2 ▶',
+      )),
     ],
   );
 }
 
-// ---------------------------------------------------------------------------
-// Levels
-// ---------------------------------------------------------------------------
+LevelConfig _sinkChase() {
+  return LevelConfig(
+    id: 'ep1_sink_chase',
+    character: Character.james,
+    theme: DistrictTheme.rooftops,
+    mechanics: const {MechanicType.run, MechanicType.parkour, MechanicType.climb, MechanicType.shoot},
+    objective: 'Chase the courier across the Sink — run, climb, fight through',
+    bannerLine: 'Run · vault · climb the tenement · shoot the Mire',
+    worldWidth: 214,
+    worldHeight: 32,
+    killY: 26,
+    start: const Pt(4, 7),
+    goal: const Pt(198, 7),
+    goalLabel: 'THE HIGH ROOF',
+    platforms: [
+      ...Build.roofRun(x0: 0, count: 6, width: 9, gap: 3.5, baseY: 11, vary: 2.0),
+      Build.floor(x: 72, width: 24, y: 19, depth: 13), // alley base
+      Platform(x: 76, y: 6, width: 20, height: 2), // tenement ledge (climb up to it)
+      Build.floor(x: 100, width: 64, y: 19, depth: 13), // the street (shoot)
+      ...Build.roofRun(x0: 168, count: 4, width: 10, gap: 4, baseY: 9, vary: 1.4),
+    ],
+    walls: const [
+      Wall(x: 34, y: 2, width: 1.6, height: 9), // parkour pillar
+      Wall(x: 60, y: 3, width: 1.6, height: 8),
+    ],
+    ladders: [
+      Build.ladder(x: 82, topY: 4, bottomY: 19), // up to the tenement ledge
+    ],
+    enemies: [
+      ...Build.enemiesAt(EnemyKind.grunt, [114, 132, 150], 19, patrol: 5),
+      ...Build.enemiesAt(EnemyKind.drone, [56, 120, 178], 9),
+    ],
+    checkpoints: const [Pt(38, 8), Pt(80, 16), Pt(108, 16), Pt(150, 16), Pt(180, 6)],
+    pickups: const [
+      PickupSpawn(PickupKind.marker, x: 78, y: 5, note: 'A paper crane, snagged on an aerial. She came this way.'),
+      PickupSpawn(PickupKind.marker, x: 160, y: 18, note: 'Mire tag, fresh paint. They\'re hunting her too.'),
+    ],
+    npcs: const [
+      NpcSpawn(NpcKind.books, x: 128, y: 19, facing: -1, lines: [
+        DialogueLine(Speakers.books, 'James Vance. Knew you\'d come down here swinging.'),
+        DialogueLine(Speakers.james, 'Where is she, Books?'),
+        DialogueLine(Speakers.books,
+            'Floodworks, last anyone saw. But listen to me — Millie\'s not who you '
+            'remember. She walked away from you on purpose, son.'),
+        DialogueLine(Speakers.books, 'Whatever she\'s into, it\'s bigger than a kid sister in trouble.'),
+        DialogueLine(Speakers.james, 'Then I\'d better catch up.'),
+      ]),
+    ],
+    dialogueTriggers: const [
+      DialogueTrigger(x: 2, lines: [
+        DialogueLine(Speakers.james, 'Stay on the roofs. Don\'t lose the kid.'),
+      ]),
+      DialogueTrigger(x: 24, lines: [
+        DialogueLine(Speakers.books, '(comm) That you on the Row, James? You\'re making noise.'),
+        DialogueLine(Speakers.james, '(comm) Found one of her cranes. Following the next.'),
+      ]),
+      DialogueTrigger(x: 76, lines: [
+        DialogueLine(Speakers.books, '(comm) Tenement\'s rotted through. Climb it, don\'t trust the stairs.'),
+      ]),
+      DialogueTrigger(x: 104, blocking: true, lines: [
+        DialogueLine(Speakers.books, '(comm) Mire on the street ahead — the old crew. They\'ll know your face.'),
+        DialogueLine(Speakers.james, '(comm) Then they know to get out of my way.'),
+      ]),
+      DialogueTrigger(x: 170, lines: [
+        DialogueLine(Speakers.james, 'There — the courier. End of the Row.'),
+      ]),
+    ],
+  );
+}
 
-const LevelConfig _rooftopChase = LevelConfig(
-  id: 'ep1_rooftop_chase',
-  character: Character.kade,
-  theme: DistrictTheme.rooftops,
-  mechanics: {MechanicType.run, MechanicType.parkour},
-  objective: 'Chase the courier across the Lowtown rooftops',
-  bannerLine: 'Catch the courier — don’t let The Hollow reach him first.',
-  worldWidth: 142,
-  worldHeight: 28,
-  start: Pt(4, 9),
-  goal: Pt(127, 7),
-  goalLabel: 'THE WATER TOWER',
-  hazards: [
-    Hazard(x: 0, y: 26, width: 142, height: 4), // the fall
-  ],
-  platforms: [
-    Platform(x: 0, y: 12, width: 16, height: 14),
-    Platform(x: 22, y: 11, width: 11, height: 15),
-    Platform(x: 38, y: 13, width: 9, height: 13),
-    Platform(x: 52, y: 10, width: 9, height: 16),
-    Platform(x: 67, y: 8, width: 11, height: 18),
-    Platform(x: 83, y: 12, width: 13, height: 14),
-    Platform(x: 101, y: 10, width: 10, height: 16),
-    Platform(x: 116, y: 9, width: 20, height: 17),
-  ],
-  walls: [
-    Wall(x: 64.0, y: 1, width: 1.6, height: 9), // parkour pillar before the high roof
-    Wall(x: 99.0, y: 2, width: 1.6, height: 8),
-  ],
-  enemies: [
-    EnemySpawn(EnemyKind.drone, x: 30, y: 6),
-    EnemySpawn(EnemyKind.grunt, x: 88, y: 11, patrol: 4),
-    EnemySpawn(EnemyKind.drone, x: 108, y: 5),
-  ],
-  pickups: [
-    PickupSpawn(PickupKind.marker, x: 40, y: 11,
-        note: 'A dropped data-chip. Echo’s signature is all over it.'),
-    PickupSpawn(PickupKind.marker, x: 92, y: 10,
-        note: 'Hollow tag sprayed on a vent: a hollow circle. They were here.'),
-  ],
-);
-
-const LevelConfig _tagFlashback = LevelConfig(
-  id: 'ep1_tag_flashback',
-  character: Character.aria,
-  theme: DistrictTheme.lowtownNight,
-  mechanics: {MechanicType.run, MechanicType.parkour},
-  flashback: true,
-  objective: 'Catch up to your brother',
-  bannerLine: 'Tag, you’re it. Chase Kade across the rooftops.',
-  worldWidth: 86,
-  worldHeight: 26,
-  start: Pt(4, 10),
-  goal: Pt(78, 8),
-  goalLabel: 'CATCH KADE',
-  hazards: [
-    Hazard(x: 0, y: 24, width: 86, height: 4),
-  ],
-  platforms: [
-    Platform(x: 0, y: 13, width: 14, height: 13),
-    Platform(x: 19, y: 12, width: 10, height: 14),
-    Platform(x: 33, y: 14, width: 9, height: 12),
-    Platform(x: 47, y: 11, width: 10, height: 15),
-    Platform(x: 62, y: 13, width: 9, height: 13),
-    Platform(x: 74, y: 10, width: 12, height: 16),
-  ],
-  walls: [
-    Wall(x: 59.5, y: 3, width: 1.6, height: 8),
-  ],
-  pickups: [
-    PickupSpawn(PickupKind.coin, x: 36, y: 12, note: 'A bottle-cap “coin.” Kade always kept the shiny ones.'),
-    PickupSpawn(PickupKind.marker, x: 78, y: 8, note: 'Gotcha! “Tag — you’re it!”'),
-  ],
-);
+LevelConfig _craneFlashback() {
+  return LevelConfig(
+    id: 'ep1_crane_flashback',
+    character: Character.millie,
+    theme: DistrictTheme.lowtownNight,
+    mechanics: const {MechanicType.run, MechanicType.parkour},
+    flashback: true,
+    objective: 'Catch up to your brother at the washing-lines',
+    bannerLine: 'Tag, you\'re it.',
+    worldWidth: 110,
+    worldHeight: 28,
+    killY: 24,
+    start: const Pt(4, 9),
+    goal: const Pt(102, 8),
+    goalLabel: 'THE WASHING-LINES',
+    platforms: [
+      ...Build.roofRun(x0: 0, count: 7, width: 9, gap: 4, baseY: 12, vary: 2.4),
+      Platform(x: 96, y: 10, width: 14, height: 16),
+    ],
+    walls: const [Wall(x: 58, y: 3, width: 1.6, height: 8)],
+    checkpoints: const [Pt(36, 10), Pt(72, 10)],
+    pickups: const [
+      PickupSpawn(PickupKind.coin, x: 40, y: 11, note: 'A folded crane on the ledge. Mara taught her these.'),
+      PickupSpawn(PickupKind.marker, x: 102, y: 8, note: 'Gotcha! "If we ever get lost, leave a trail of these."'),
+    ],
+    dialogueTriggers: const [
+      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngMillie, 'Too slow! Mum\'s got tea on!')]),
+      DialogueTrigger(x: 50, lines: [
+        DialogueLine(Speakers.youngJames, 'Mil, the gap\'s too — Millie!'),
+        DialogueLine(Speakers.youngMillie, 'Trust the jump, big bro!'),
+      ]),
+      DialogueTrigger(x: 90, lines: [DialogueLine(Speakers.mara, '(distant) Come in, you two. Count the stars with me.')]),
+    ],
+  );
+}

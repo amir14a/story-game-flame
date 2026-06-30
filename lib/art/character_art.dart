@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import '../core/palette.dart';
 import '../story/models/dialogue.dart';
+import '../story/models/level_config.dart';
 import 'neon.dart';
 
 /// The pose a humanoid figure is drawn in. The artist interpolates limb
@@ -10,9 +11,9 @@ import 'neon.dart';
 enum CharacterPose { idle, run, jump, fall, swim, climb, aim, seated }
 
 /// Per-character silhouette so the siblings actually look different — not just
-/// recoloured. Kade (brother) is taller and broad-shouldered with cropped hair,
-/// a hood collar and a courier satchel; Aria (sister) is slighter with a pinched
-/// waist, a fringe and a long swaying ponytail.
+/// recoloured. James (brother) is taller and broad-shouldered with cropped hair,
+/// a hood collar and a courier satchel; Millie (sister) is slighter with a
+/// pinched waist, a fringe and a long swaying ponytail.
 class _Build {
   const _Build({
     required this.shoulder,
@@ -36,10 +37,10 @@ class _Build {
 abstract final class CharacterArtist {
   static const double height = 1.7;
 
-  static const _Build _kadeBuild = _Build(
+  static const _Build _jamesBuild = _Build(
     shoulder: 0.21, waist: 0.20, hip: 0.16, headR: 0.205, headY: -0.62, scaleY: 1.0,
   );
-  static const _Build _ariaBuild = _Build(
+  static const _Build _millieBuild = _Build(
     shoulder: 0.145, waist: 0.105, hip: 0.155, headR: 0.18, headY: -0.6, scaleY: 0.94,
   );
   static const _Build _gruntBuild = _Build(
@@ -47,8 +48,8 @@ abstract final class CharacterArtist {
   );
 
   static (Color, Color) _colors(Character c) => switch (c) {
-        Character.kade => (NeonPalette.kadePrimary, NeonPalette.kadeSecondary),
-        Character.aria => (NeonPalette.ariaPrimary, NeonPalette.ariaSecondary),
+        Character.james => (NeonPalette.jamesPrimary, NeonPalette.jamesSecondary),
+        Character.millie => (NeonPalette.milliePrimary, NeonPalette.millieSecondary),
       };
 
   static void draw(
@@ -62,7 +63,7 @@ abstract final class CharacterArtist {
     final (primary, secondary) = _colors(character);
     _drawFigure(canvas, primary, secondary,
         character: character,
-        build: character == Character.aria ? _ariaBuild : _kadeBuild,
+        build: character == Character.millie ? _millieBuild : _jamesBuild,
         t: t,
         facing: facing,
         pose: pose,
@@ -73,6 +74,43 @@ abstract final class CharacterArtist {
   static void drawGrunt(Canvas canvas, {required double t, required int facing, required CharacterPose pose}) {
     _drawFigure(canvas, NeonPalette.hollowRed, NeonPalette.hollowSteel,
         character: null, build: _gruntBuild, t: t, facing: facing, pose: pose);
+  }
+
+  /// A story NPC the player meets in a level.
+  static void drawNpc(
+    Canvas canvas, {
+    required NpcKind kind,
+    required double t,
+    required int facing,
+    CharacterPose pose = CharacterPose.idle,
+  }) {
+    if (kind == NpcKind.millie) {
+      draw(canvas, character: Character.millie, t: t, facing: facing, pose: pose);
+      return;
+    }
+    final (Color p, Color s, _Build build) = switch (kind) {
+      NpcKind.books => (NeonPalette.books, const Color(0xFF8A5A1E), _jamesBuild),
+      NpcKind.cray => (NeonPalette.cray, NeonPalette.hollowSteel, _gruntBuild),
+      NpcKind.saint => (NeonPalette.saint, const Color(0xFFB89B5E), _millieBuild),
+      NpcKind.millie => (NeonPalette.milliePrimary, NeonPalette.millieSecondary, _millieBuild),
+    };
+    _drawFigure(canvas, p, s, character: null, build: build, t: t, facing: facing, pose: pose);
+
+    // signature accessory
+    canvas.save();
+    canvas.scale(facing.toDouble().sign == 0 ? 1 : facing.toDouble(), 1);
+    final headY = build.headY;
+    if (kind == NpcKind.books) {
+      // a flat broker's hat
+      Neon.glowLine(canvas, Offset(-0.28, headY - 0.18), Offset(0.34, headY - 0.18), s, 0.06);
+      Neon.glowLine(canvas, Offset(-0.16, headY - 0.34), Offset(0.2, headY - 0.34), s, 0.05);
+      Neon.glowLine(canvas, Offset(-0.16, headY - 0.34), Offset(-0.16, headY - 0.18), s, 0.05);
+      Neon.glowLine(canvas, Offset(0.2, headY - 0.34), Offset(0.2, headY - 0.18), s, 0.05);
+    } else if (kind == NpcKind.saint) {
+      // a cold halo
+      Neon.glowCircle(canvas, Offset(0.02, headY - 0.42), 0.22, NeonPalette.saint, 0.04);
+    }
+    canvas.restore();
   }
 
   static void _drawFigure(
@@ -183,11 +221,11 @@ abstract final class CharacterArtist {
     _limb(canvas, shoulder, rElbow, rHand, s, w * 0.9);
 
     // ponytail sits behind the body for Aria
-    if (character == Character.aria) {
+    if (character == Character.millie) {
       _ponytail(canvas, headCenter, build.headR, s, w, swing, t);
     }
     // hood collar behind the neck for Kade
-    if (character == Character.kade) {
+    if (character == Character.james) {
       _hood(canvas, build, s, w);
     }
 
@@ -201,7 +239,7 @@ abstract final class CharacterArtist {
     Neon.glowPath(canvas, torso, p, w, filled: true, fillAlpha: 0.22);
 
     // hip / jacket hem cue: Aria gets a slight tunic flare, Kade a belt line
-    if (character == Character.aria) {
+    if (character == Character.millie) {
       final hem = Path()
         ..moveTo(-build.hip - 0.04, hip.dy)
         ..lineTo(build.hip + 0.04, hip.dy)
@@ -217,7 +255,7 @@ abstract final class CharacterArtist {
     Neon.glowLine(canvas, const Offset(-0.04, -0.34), const Offset(0.06, 0.04), s, w * 0.6);
 
     // satchel strap for Kade
-    if (character == Character.kade) {
+    if (character == Character.james) {
       Neon.glowLine(canvas, const Offset(0.16, -0.4), const Offset(-0.16, 0.12), s, w * 0.8);
       Neon.glowRRect(
         canvas,
@@ -229,7 +267,7 @@ abstract final class CharacterArtist {
       );
     }
     // slim data-deck on Aria's hip
-    if (character == Character.aria) {
+    if (character == Character.millie) {
       Neon.glowRRect(
         canvas,
         RRect.fromRectAndRadius(const Rect.fromLTWH(0.16, 0.04, 0.14, 0.1), const Radius.circular(0.03)),
@@ -261,7 +299,7 @@ abstract final class CharacterArtist {
       Canvas canvas, Character? character, Offset c, _Build b, Color p, Color s, double w) {
     final r = b.headR;
     switch (character) {
-      case Character.kade:
+      case Character.james:
         // cropped hair cap + short spikes
         final cap = Path()
           ..moveTo(c.dx - r * 0.95, c.dy - r * 0.1)
@@ -273,7 +311,7 @@ abstract final class CharacterArtist {
         }
         // visor
         Neon.glowLine(canvas, Offset(c.dx - r * 0.1, c.dy), Offset(c.dx + r * 0.8, c.dy + r * 0.1), s, w * 0.8);
-      case Character.aria:
+      case Character.millie:
         // soft fringe sweeping across the forehead
         final fringe = Path()
           ..moveTo(c.dx - r * 0.9, c.dy - r * 0.2)

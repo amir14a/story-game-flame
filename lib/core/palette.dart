@@ -21,11 +21,16 @@ abstract final class NeonPalette {
   static const Color danger = Color(0xFFFF3B5C);
   static const Color signalGreen = Color(0xFF38FFA3);
 
-  // Characters.
-  static const Color kadePrimary = Color(0xFF21F3FF); // cyan
-  static const Color kadeSecondary = Color(0xFF1B6CFF);
-  static const Color ariaPrimary = Color(0xFFFF2BD6); // magenta
-  static const Color ariaSecondary = Color(0xFFFF8AE0);
+  // Playable characters.
+  static const Color jamesPrimary = Color(0xFF21F3FF); // cyan
+  static const Color jamesSecondary = Color(0xFF1B6CFF);
+  static const Color milliePrimary = Color(0xFFFF2BD6); // magenta
+  static const Color millieSecondary = Color(0xFFFF8AE0);
+
+  // Story NPCs.
+  static const Color books = Color(0xFFFFB23D); // amber, the broker
+  static const Color cray = Color(0xFFFF2E4D); // red, the enforcer
+  static const Color saint = Color(0xFFFFE6A8); // pale gold, the head of Saint-Cloud
 
   // Hostiles.
   static const Color hollowRed = Color(0xFFFF2E4D);

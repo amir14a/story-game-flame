@@ -7,6 +7,7 @@ import 'package:flame_forge2d/flame_forge2d.dart';
 import '../../actors/enemy.dart';
 import '../../actors/pickup.dart';
 import '../../actors/player_actor.dart';
+import '../../actors/story_npc.dart';
 import '../../actors/vehicles.dart';
 import '../../art/lighting.dart';
 import '../../core/game_config.dart';
@@ -70,8 +71,16 @@ class LevelScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
     for (final pk in config.pickups) {
       add(Pickup(kind: pk.kind, spawn: Vector2(pk.x, pk.y), note: pk.note));
     }
+    for (final npc in config.npcs) {
+      add(StoryNpc(npc));
+    }
 
     player = _spawnPlayer();
+    if (player is PlayerActor) {
+      (player as PlayerActor)
+        ..checkpoints = config.checkpoints.map((p) => Vector2(p.x, p.y)).toList(growable: false)
+        ..deathPlaneY = config.deathPlaneY;
+    }
     await add(player); // ensure the body exists before the camera follows it
 
     // The lighting pass renders last (on top of everything in the world).
@@ -97,6 +106,27 @@ class LevelScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
         return CarActor(character: config.character, mechanics: config.mechanics, spawn: spawn);
       case VehicleKind.bike:
         return BikeActor(character: config.character, mechanics: config.mechanics, spawn: spawn);
+    }
+  }
+
+  final Set<int> _firedTriggers = {};
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    if (!player.isMounted || config.dialogueTriggers.isEmpty) {
+      return;
+    }
+    final x = player.body.position.x;
+    for (var i = 0; i < config.dialogueTriggers.length; i++) {
+      if (_firedTriggers.contains(i)) {
+        continue;
+      }
+      final t = config.dialogueTriggers[i];
+      if (x >= t.x && x <= t.x + t.width) {
+        _firedTriggers.add(i);
+        game.narrative.play(t.lines, blocking: t.blocking);
+      }
     }
   }
 

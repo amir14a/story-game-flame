@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../core/overlay_ids.dart';
 import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
 import '../story/models/dialogue.dart';
-import '../story/models/episode.dart';
 import 'widgets.dart';
 
 /// Builds the overlay widget map registered with the `GameWidget`.
@@ -14,6 +14,7 @@ Map<String, Widget Function(BuildContext, NeonEchoGame)> buildOverlays() => {
       OverlayIds.episodeSelect: (context, game) => EpisodeSelectOverlay(game: game),
       OverlayIds.cutscene: (context, game) => CutsceneOverlay(game: game),
       OverlayIds.hud: (context, game) => HudOverlay(game: game),
+      OverlayIds.dialogue: (context, game) => DialogueOverlay(game: game),
       OverlayIds.pause: (context, game) => PauseOverlay(game: game),
       OverlayIds.levelCleared: (context, game) => LevelClearedOverlay(game: game),
       OverlayIds.gameOver: (context, game) => GameOverOverlay(game: game),
@@ -34,34 +35,34 @@ class MainMenuOverlay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            neonTag('A CYBERPUNK STORY · NYX CITY', color: NeonPalette.magenta),
+            neonTag('A CYBERPUNK STORY · VERGE CITY', color: NeonPalette.magenta),
             const SizedBox(height: 14),
-            const GlitchTitle('NEON ECHO', fontSize: 78),
-            const SizedBox(height: 16),
+            const GlitchTitle('NEON ECHO', fontSize: 76),
+            const SizedBox(height: 14),
             const SizedBox(
-              width: 560,
+              width: 600,
               child: Text(
-                'A brother hunts the neon-drowned sprawl for his missing sister, '
-                'across five episodes — and back through everything they were.',
+                'James Vance hunts the drowned neon sprawl for his sister Millie — '
+                'and the closer he gets, the less she is the person he came to save.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: NeonPalette.textDim, fontSize: 15, height: 1.5),
               ),
             ),
-            const SizedBox(height: 30),
-            NeonButton(label: 'NEW GAME', primary: true, onTap: game.director.startNewGame),
-            const SizedBox(height: 14),
-            NeonButton(label: 'EPISODES', color: NeonPalette.magenta, onTap: game.director.showEpisodeSelect),
             const SizedBox(height: 26),
+            KeyboardMenu(actions: [
+              MenuAction('NEW GAME', game.director.startNewGame, primary: true),
+              MenuAction('EPISODES', game.director.showEpisodeSelect, color: NeonPalette.magenta),
+            ]),
+            const SizedBox(height: 24),
             const Text(
-              'KEYBOARD  ·  A/D or ←/→ move  ·  W/↑ up  ·  SPACE jump  ·  J fire  ·  ESC pause\n'
-              'TOUCH  ·  left stick + A (jump) + B (fire)',
+              'KEYBOARD · A/D or ←/→ move · W/↑ up · SPACE jump · J fire · ESC pause\n'
+              'MENUS · ↑/↓ select · ENTER confirm    ·    TOUCH · stick + A / B',
               textAlign: TextAlign.center,
               style: TextStyle(color: NeonPalette.textDim, fontSize: 11, height: 1.6, letterSpacing: 1),
             ),
             if (kDebugMode) ...[
-              const SizedBox(height: 16),
-              neonTag('DEBUG CHEAT  ·  ↑ ↑ ↓ ↓ ← → ← →  B  A  unlocks all episodes',
-                  color: NeonPalette.amber),
+              const SizedBox(height: 14),
+              neonTag('DEBUG CHEAT · ↑ ↑ ↓ ↓ ← → ← → B A unlocks all episodes', color: NeonPalette.amber),
             ],
           ],
         ),
@@ -71,7 +72,7 @@ class MainMenuOverlay extends StatelessWidget {
 }
 
 // ===========================================================================
-// Episode select
+// Episode select (keyboard-navigable list)
 // ===========================================================================
 class EpisodeSelectOverlay extends StatelessWidget {
   const EpisodeSelectOverlay({super.key, required this.game});
@@ -79,118 +80,38 @@ class EpisodeSelectOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final episodes = game.story.episodes;
     return NeonScaffold(
       accent: NeonPalette.magenta,
-      child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const GlitchTitle('EPISODES', fontSize: 40),
-                const Spacer(),
-                NeonButton(label: '◂ MENU', width: 150, onTap: game.director.showMainMenu),
-              ],
-            ),
-            const SizedBox(height: 18),
-            Expanded(
-              child: SingleChildScrollView(
-                // Rebuilds when unlockedEpisode changes (e.g. the debug cheat).
-                child: ListenableBuilder(
-                  listenable: game.state,
-                  builder: (context, _) {
-                    final unlocked = game.state.unlockedEpisode;
-                    return Wrap(
-                      spacing: 16,
-                      runSpacing: 16,
-                      children: [
-                        for (final ep in episodes)
-                          _EpisodeCard(
-                            episode: ep,
-                            locked: ep.number > unlocked,
-                            onTap: () => game.director.startEpisode(ep.number),
-                          ),
-                      ],
-                    );
-                  },
+      child: Center(
+        child: ListenableBuilder(
+          listenable: game.state,
+          builder: (context, _) {
+            final unlocked = game.state.unlockedEpisode;
+            final actions = <MenuAction>[
+              for (final ep in game.story.episodes)
+                MenuAction(
+                  ep.number > unlocked
+                      ? 'EP ${ep.number}   ${ep.title}   ·   LOCKED'
+                      : 'EP ${ep.number}   ${ep.title}',
+                  () => game.director.startEpisode(ep.number),
+                  enabled: ep.number <= unlocked,
+                  width: 520,
                 ),
-              ),
-            ),
-            if (kDebugMode) const _CheatHint(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A debug-only hint describing the unlock-all cheat code.
-class _CheatHint extends StatelessWidget {
-  const _CheatHint();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Row(
-        children: [
-          neonTag('DEBUG', color: NeonPalette.amber),
-          const SizedBox(width: 10),
-          const Flexible(
-            child: Text(
-              'Cheat: press  ↑ ↑ ↓ ↓ ← → ← →  B  A  to unlock all episodes',
-              style: TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 1),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EpisodeCard extends StatelessWidget {
-  const _EpisodeCard({required this.episode, required this.locked, required this.onTap});
-  final Episode episode;
-  final bool locked;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = locked ? NeonPalette.textDim : NeonPalette.cyan;
-    return GestureDetector(
-      onTap: locked ? null : onTap,
-      child: Container(
-        width: 320,
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: NeonPalette.voidBlack.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.8), width: 1.6),
-          boxShadow: [if (!locked) BoxShadow(color: color.withValues(alpha: 0.25), blurRadius: 16)],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+              MenuAction('◂  BACK TO MENU', game.director.showMainMenu,
+                  color: NeonPalette.textDim, width: 520),
+            ];
+            return Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text('EP ${episode.number}',
-                    style: TextStyle(color: color, fontSize: 28, fontWeight: FontWeight.w900)),
-                const Spacer(),
-                if (locked)
-                  const Icon(Icons.lock_outline, color: NeonPalette.textDim, size: 22)
-                else
-                  const Icon(Icons.play_circle_outline, color: NeonPalette.cyan, size: 24),
+                const GlitchTitle('EPISODES', fontSize: 44),
+                const SizedBox(height: 10),
+                const Text('↑ / ↓ to choose · ENTER to begin',
+                    style: TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 1.5)),
+                const SizedBox(height: 20),
+                KeyboardMenu(actions: actions, spacing: 10),
               ],
-            ),
-            const SizedBox(height: 6),
-            Text(episode.title,
-                style: const TextStyle(color: NeonPalette.textBright, fontSize: 19, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
-            Text(episode.tagline,
-                style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 1.4)),
-          ],
+            );
+          },
         ),
       ),
     );
@@ -198,7 +119,7 @@ class _EpisodeCard extends StatelessWidget {
 }
 
 // ===========================================================================
-// Cutscene
+// Cutscene (full-screen story beat)
 // ===========================================================================
 class CutsceneOverlay extends StatefulWidget {
   const CutsceneOverlay({super.key, required this.game});
@@ -210,8 +131,15 @@ class CutsceneOverlay extends StatefulWidget {
 
 class _CutsceneOverlayState extends State<CutsceneOverlay> {
   int _revealed = 1;
+  final FocusNode _node = FocusNode();
 
   Cutscene get _cs => widget.game.currentCutscene!;
+
+  @override
+  void dispose() {
+    _node.dispose();
+    super.dispose();
+  }
 
   ({Color accent, Gradient gradient}) _mood(CutsceneMood mood) {
     switch (mood) {
@@ -256,6 +184,23 @@ class _CutsceneOverlayState extends State<CutsceneOverlay> {
     }
   }
 
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final advanceKeys = {
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.numpadEnter,
+      LogicalKeyboardKey.space,
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.keyJ,
+    };
+    if (advanceKeys.contains(event.logicalKey)) {
+      _advance();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = _cs;
@@ -263,67 +208,73 @@ class _CutsceneOverlayState extends State<CutsceneOverlay> {
     final allRevealed = _revealed >= cs.lines.length;
     final shown = cs.lines.take(_revealed.clamp(0, cs.lines.length)).toList();
 
-    return NeonScaffold(
-      accent: mood.accent,
-      gradient: mood.gradient,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: _advance,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 24, 40, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  neonTag(cs.title, color: mood.accent),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(cs.location,
-                        style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  reverse: true,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      for (final n in cs.narration)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(n,
-                              style: const TextStyle(
-                                  color: NeonPalette.textDim,
-                                  fontSize: 15,
-                                  height: 1.5,
-                                  fontStyle: FontStyle.italic)),
-                        ),
-                      const SizedBox(height: 4),
-                      for (var i = 0; i < shown.length; i++)
-                        _DialogueBlock(line: shown[i], typing: i == shown.length - 1),
-                    ],
+    return Focus(
+      focusNode: _node,
+      autofocus: true,
+      onKeyEvent: _onKey,
+      child: NeonScaffold(
+        accent: mood.accent,
+        gradient: mood.gradient,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _advance,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(40, 24, 40, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    neonTag(cs.title, color: mood.accent),
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(cs.location,
+                          style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    reverse: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        for (final n in cs.narration)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Text(n,
+                                style: const TextStyle(
+                                    color: NeonPalette.textDim,
+                                    fontSize: 15,
+                                    height: 1.5,
+                                    fontStyle: FontStyle.italic)),
+                          ),
+                        const SizedBox(height: 4),
+                        for (var i = 0; i < shown.length; i++)
+                          _DialogueBlock(line: shown[i], typing: i == shown.length - 1),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(allRevealed ? '' : 'TAP TO CONTINUE',
-                      style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
-                  NeonButton(
-                    label: allRevealed ? cs.continueLabel : 'NEXT ▸',
-                    width: 240,
-                    primary: allRevealed,
-                    color: mood.accent,
-                    onTap: _advance,
-                  ),
-                ],
-              ),
-            ],
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(allRevealed ? 'ENTER / TAP' : 'ENTER / TAP TO CONTINUE',
+                        style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
+                    NeonButton(
+                      label: allRevealed ? cs.continueLabel : 'NEXT ▸',
+                      width: 250,
+                      primary: allRevealed,
+                      focused: true,
+                      color: mood.accent,
+                      onTap: _advance,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -365,6 +316,132 @@ class _DialogueBlock extends StatelessWidget {
 }
 
 // ===========================================================================
+// In-game dialogue (subtitles + blocking comm pop-ups)
+// ===========================================================================
+class DialogueOverlay extends StatelessWidget {
+  const DialogueOverlay({super.key, required this.game});
+  final NeonEchoGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: game.narrative,
+      builder: (context, _) {
+        final line = game.narrative.current;
+        if (line == null) {
+          return const IgnorePointer(child: SizedBox.expand());
+        }
+        if (game.narrative.isBlocking) {
+          return GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: game.narrative.advance,
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.4),
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 70, left: 24, right: 24),
+                child: _CommCard(line: line),
+              ),
+            ),
+          );
+        }
+        return IgnorePointer(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 96, left: 24, right: 24),
+                child: _Subtitle(line: line),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CommCard extends StatelessWidget {
+  const _CommCard({required this.line});
+  final DialogueLine line;
+
+  @override
+  Widget build(BuildContext context) {
+    final named = line.speaker.name.isNotEmpty;
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 720),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
+      decoration: BoxDecoration(
+        color: NeonPalette.voidBlack.withValues(alpha: 0.86),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: line.speaker.color.withValues(alpha: 0.9), width: 2),
+        boxShadow: [BoxShadow(color: line.speaker.color.withValues(alpha: 0.35), blurRadius: 18)],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (named)
+            Text('▸ ${line.speaker.name}',
+                style: TextStyle(
+                    color: line.speaker.color, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 1.6)),
+          if (named) const SizedBox(height: 6),
+          Text(line.text,
+              style: TextStyle(
+                color: NeonPalette.textBright,
+                fontSize: 17,
+                height: 1.4,
+                fontStyle: named ? FontStyle.normal : FontStyle.italic,
+              )),
+          const SizedBox(height: 8),
+          const Align(
+            alignment: Alignment.centerRight,
+            child: Text('ENTER / J / TAP  ▸',
+                style: TextStyle(color: NeonPalette.textDim, fontSize: 11, letterSpacing: 1.5)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Subtitle extends StatelessWidget {
+  const _Subtitle({required this.line});
+  final DialogueLine line;
+
+  @override
+  Widget build(BuildContext context) {
+    final named = line.speaker.name.isNotEmpty;
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 760),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: NeonPalette.voidBlack.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(children: [
+          if (named)
+            TextSpan(
+                text: '${line.speaker.name}:  ',
+                style: TextStyle(
+                    color: line.speaker.color, fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 1)),
+          TextSpan(
+              text: line.text,
+              style: TextStyle(
+                color: NeonPalette.textBright,
+                fontSize: 14,
+                height: 1.4,
+                fontStyle: named ? FontStyle.normal : FontStyle.italic,
+              )),
+        ]),
+      ),
+    );
+  }
+}
+
+// ===========================================================================
 // HUD (non-interactive)
 // ===========================================================================
 class HudOverlay extends StatelessWidget {
@@ -381,7 +458,6 @@ class HudOverlay extends StatelessWidget {
           return SafeArea(
             child: Stack(
               children: [
-                // top-left: episode + objective
                 Positioned(
                   left: 18,
                   top: 12,
@@ -391,8 +467,7 @@ class HudOverlay extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          neonTag(s.episodeTitle,
-                              color: s.flashback ? NeonPalette.magenta : NeonPalette.cyan),
+                          neonTag(s.episodeTitle, color: s.flashback ? NeonPalette.magenta : NeonPalette.cyan),
                           if (s.flashback) ...[
                             const SizedBox(width: 8),
                             neonTag('MEMORY', color: NeonPalette.hotPink),
@@ -401,12 +476,10 @@ class HudOverlay extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(s.objective,
-                          style: const TextStyle(
-                              color: NeonPalette.textBright, fontSize: 13, letterSpacing: 0.5)),
+                          style: const TextStyle(color: NeonPalette.textBright, fontSize: 13, letterSpacing: 0.5)),
                     ],
                   ),
                 ),
-                // top-left under objective: health + breath
                 Positioned(
                   left: 18,
                   top: 66,
@@ -433,14 +506,13 @@ class HudOverlay extends StatelessWidget {
                     ],
                   ),
                 ),
-                // bottom-center: toast
                 if (s.toast != null)
                   Align(
                     alignment: Alignment.topCenter,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 18),
                       child: Container(
-                        constraints: const BoxConstraints(maxWidth: 520),
+                        constraints: const BoxConstraints(maxWidth: 560),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         decoration: BoxDecoration(
                           color: NeonPalette.voidBlack.withValues(alpha: 0.7),
@@ -500,7 +572,7 @@ class _BreathBar extends StatelessWidget {
 }
 
 // ===========================================================================
-// Pause / Game over / Level cleared / Victory
+// Pause / cleared / game over / victory
 // ===========================================================================
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({super.key, required this.game});
@@ -514,14 +586,13 @@ class PauseOverlay extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const GlitchTitle('PAUSED', fontSize: 52),
-            const SizedBox(height: 28),
-            NeonButton(label: 'RESUME', primary: true, onTap: game.togglePause),
-            const SizedBox(height: 12),
-            NeonButton(label: 'RESTART LEVEL', color: NeonPalette.amber, onTap: game.director.retryLevel),
-            const SizedBox(height: 12),
-            NeonButton(label: 'EPISODES', color: NeonPalette.magenta, onTap: game.director.showEpisodeSelect),
-            const SizedBox(height: 12),
-            NeonButton(label: 'QUIT TO MENU', color: NeonPalette.textDim, onTap: game.director.showMainMenu),
+            const SizedBox(height: 24),
+            KeyboardMenu(actions: [
+              MenuAction('RESUME', game.togglePause, primary: true),
+              MenuAction('RESTART LEVEL', game.director.retryLevel, color: NeonPalette.amber),
+              MenuAction('EPISODES', game.director.showEpisodeSelect, color: NeonPalette.magenta),
+              MenuAction('QUIT TO MENU', game.director.showMainMenu, color: NeonPalette.textDim),
+            ]),
           ],
         ),
       ),
@@ -541,19 +612,21 @@ class LevelClearedOverlay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            neonTag(game.state.flashback ? 'MEMORY COMPLETE' : 'SEQUENCE COMPLETE',
-                color: NeonPalette.signalGreen),
+            neonTag(game.state.flashback ? 'MEMORY COMPLETE' : 'SEQUENCE COMPLETE', color: NeonPalette.signalGreen),
             const SizedBox(height: 16),
-            const GlitchTitle('CLEAR', fontSize: 64, gradient: LinearGradient(colors: [NeonPalette.signalGreen, NeonPalette.cyan])),
+            const GlitchTitle('CLEAR',
+                fontSize: 64, gradient: LinearGradient(colors: [NeonPalette.signalGreen, NeonPalette.cyan])),
             const SizedBox(height: 14),
             SizedBox(
-              width: 520,
+              width: 540,
               child: Text(game.state.objective,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: NeonPalette.textDim, fontSize: 14, height: 1.5)),
             ),
-            const SizedBox(height: 28),
-            NeonButton(label: 'CONTINUE', primary: true, color: NeonPalette.signalGreen, onTap: game.director.continueAfterLevel),
+            const SizedBox(height: 26),
+            KeyboardMenu(actions: [
+              MenuAction('CONTINUE', game.director.continueAfterLevel, primary: true, color: NeonPalette.signalGreen),
+            ]),
           ],
         ),
       ),
@@ -578,16 +651,17 @@ class GameOverOverlay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const GlitchTitle('SIGNAL LOST', fontSize: 56, gradient: LinearGradient(colors: [NeonPalette.danger, NeonPalette.hotPink])),
+            const GlitchTitle('SIGNAL LOST',
+                fontSize: 56, gradient: LinearGradient(colors: [NeonPalette.danger, NeonPalette.hotPink])),
             const SizedBox(height: 14),
-            const Text("Nyx City doesn't wait. Try again.",
+            const Text('Verge City does not wait. Try again from the last checkpoint.',
                 style: TextStyle(color: NeonPalette.textDim, fontSize: 14)),
-            const SizedBox(height: 28),
-            NeonButton(label: 'RETRY', primary: true, color: NeonPalette.danger, onTap: game.director.retryLevel),
-            const SizedBox(height: 12),
-            NeonButton(label: 'EPISODES', color: NeonPalette.magenta, onTap: game.director.showEpisodeSelect),
-            const SizedBox(height: 12),
-            NeonButton(label: 'QUIT TO MENU', color: NeonPalette.textDim, onTap: game.director.showMainMenu),
+            const SizedBox(height: 26),
+            KeyboardMenu(actions: [
+              MenuAction('RETRY', game.director.retryLevel, primary: true, color: NeonPalette.danger),
+              MenuAction('EPISODES', game.director.showEpisodeSelect, color: NeonPalette.magenta),
+              MenuAction('QUIT TO MENU', game.director.showMainMenu, color: NeonPalette.textDim),
+            ]),
           ],
         ),
       ),
@@ -612,27 +686,28 @@ class VictoryOverlay extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            neonTag('DAWN OVER NYX CITY', color: NeonPalette.amber),
+            neonTag('DAWN OVER VERGE CITY', color: NeonPalette.amber),
             const SizedBox(height: 16),
-            const GlitchTitle('THE HOLLOW HAS FALLEN',
-                fontSize: 44, gradient: LinearGradient(colors: [NeonPalette.amber, NeonPalette.hotPink, NeonPalette.cyan])),
+            const GlitchTitle('THE LIGHTS COME UP LIKE STARS',
+                fontSize: 38,
+                gradient: LinearGradient(colors: [NeonPalette.amber, NeonPalette.hotPink, NeonPalette.cyan])),
             const SizedBox(height: 18),
             const SizedBox(
-              width: 600,
+              width: 620,
               child: Text(
-                'Kade and Aria stand at the top of the world, side by side. The '
-                'upload is done. The truth is everywhere now. Two kids from Lowtown '
-                'kept their promise.\n\nThank you for playing NEON ECHO.',
+                'James found Millie — thinner, scarred, changed, but hers. He stops '
+                'trying to carry her, and just sits beside her as the city wakes.\n\n'
+                'Thank you for playing NEON ECHO.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: NeonPalette.textBright, fontSize: 15, height: 1.6),
               ),
             ),
-            const SizedBox(height: 30),
-            NeonButton(label: 'PLAY AGAIN', primary: true, color: NeonPalette.amber, onTap: game.director.startNewGame),
-            const SizedBox(height: 12),
-            NeonButton(label: 'EPISODES', color: NeonPalette.magenta, onTap: game.director.showEpisodeSelect),
-            const SizedBox(height: 12),
-            NeonButton(label: 'MAIN MENU', color: NeonPalette.textDim, onTap: game.director.showMainMenu),
+            const SizedBox(height: 28),
+            KeyboardMenu(actions: [
+              MenuAction('PLAY AGAIN', game.director.startNewGame, primary: true, color: NeonPalette.amber),
+              MenuAction('EPISODES', game.director.showEpisodeSelect, color: NeonPalette.magenta),
+              MenuAction('MAIN MENU', game.director.showMainMenu, color: NeonPalette.textDim),
+            ]),
           ],
         ),
       ),

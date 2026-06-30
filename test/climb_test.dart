@@ -10,9 +10,9 @@ import 'package:neon_echo/ui/overlays.dart';
 
 /// A tiny level: a floor, a solid platform overhead, and a ladder that passes
 /// up through that platform — the exact shape that used to trap the player.
-const _climbLevel = LevelConfig(
+final _climbLevel = LevelConfig(
   id: 'test_climb',
-  character: Character.kade,
+  character: Character.james,
   theme: DistrictTheme.spire,
   mechanics: {MechanicType.climb},
   objective: 'climb test',

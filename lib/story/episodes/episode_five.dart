@@ -1,164 +1,213 @@
+import '../level_builders.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
 
-/// Episode 5 — "The Spire".
-/// The Spire · Climbing + Parkour + Shooting · Kade (with a brief Aria flashback).
+/// Episode 5 — "Crown of Stars" (the finale).
+/// The Apex · climb/parkour/shoot, then swim/run escape · James finds Millie.
 Episode buildEpisodeFive() {
-  return const Episode(
+  return Episode(
     number: 5,
-    title: 'The Spire',
-    tagline: 'THE SPIRE · CLIMB · PARKOUR · SHOOT',
+    title: 'Crown of Stars',
+    tagline: 'THE APEX · CLIMB · PARKOUR · SHOOT · SWIM',
     theme: DistrictTheme.spire,
     phases: [
-      CutscenePhase(
-        Cutscene(
-          title: 'EPISODE 5',
-          location: 'INSIDE THE SPIRE',
-          mood: CutsceneMood.present,
-          narration: [
-            'Every floor is a war. Aria is somewhere above, racing the same clock, '
-                'trying to reach the data-core at the summit before The Hollow stops her.',
-          ],
-          lines: [
-            DialogueLine(Speakers.aria,
-                'Kade?? You’re IN the building? You absolute — okay. OKAY. Get to '
-                'the top. The core’s at the summit.'),
-            DialogueLine(Speakers.aria, 'We finish this together or not at all.'),
-            DialogueLine(Speakers.kade, 'Took the words right out of my mouth. Don’t you dare move.'),
-          ],
-          continueLabel: 'REMEMBER',
-        ),
-      ),
-      CutscenePhase(
-        Cutscene(
-          title: 'FLASHBACK',
-          location: 'LOWTOWN ROOFTOP · THE PROMISE',
-          mood: CutsceneMood.flashback,
-          narration: [
-            'As he climbs, the old promise flickers through — two kids, legs over '
-                'the edge of Lowtown.',
-          ],
-          lines: [
-            DialogueLine(Speakers.youngAria,
-                'If we ever get lost — really lost — climb to the top of the world. '
-                'The Spire. I’ll find you there.'),
-            DialogueLine(Speakers.youngKade, 'That’s the dumbest plan I ever heard.'),
-            DialogueLine(Speakers.youngAria, 'It’s a great plan. Pinky. Promise.'),
-            DialogueLine(Speakers.narrator, 'You are Aria. Walk out to the edge and seal the promise.'),
-          ],
-          continueLabel: 'PLAY AS ARIA',
-        ),
-      ),
-      LevelPhase(_promiseFlashback),
-      CutscenePhase(
-        Cutscene(
-          title: 'THE CLIMB',
-          location: 'THE SPIRE · ASCENDING',
-          mood: CutsceneMood.present,
-          narration: [
-            'Back to now. The promise and the climb become the same motion. The '
-                'city falls away beneath you into a sea of light.',
-          ],
-          lines: [
-            DialogueLine(Speakers.narrator,
-                'Climb the rigging, wall-jump the shafts, and shoot through The '
-                'Hollow. Reach the summit.'),
-          ],
-          continueLabel: 'CLIMB TO THE TOP OF THE WORLD',
-        ),
-      ),
-      LevelPhase(_spireAscent),
-      CutscenePhase(
-        Cutscene(
-          title: 'THE TOP OF THE WORLD',
-          location: 'THE SUMMIT DATA-CORE · DAWN',
-          mood: CutsceneMood.victory,
-          narration: [
-            'Kade reaches the summit as dawn cracks the horizon. And there she is. '
-                'Aria. Thinner, scarred — alive. For a moment, neither of them moves.',
-          ],
-          lines: [
-            DialogueLine(Speakers.aria, '…You actually climbed to the top of the world.'),
-            DialogueLine(Speakers.kade, 'You said you’d find me here. Figured I’d save you the walk.'),
-            DialogueLine(Speakers.narrator,
-                'Together they hold Vex off long enough to slam the upload home. '
-                'Halcyon’s crimes flood every screen in Nyx City at once. The '
-                'Hollow’s grip breaks.'),
-            DialogueLine(Speakers.aria, 'Mom and Dad. Everyone. They’ll know now.'),
-            DialogueLine(Speakers.kade, 'Yeah. They will. …Don’t ever disappear on me again.'),
-            DialogueLine(Speakers.aria, 'Deal. Pinky promise.'),
-          ],
-          continueLabel: 'THE END',
-        ),
-      ),
+      const CutscenePhase(Cutscene(
+        title: 'EPISODE 5',
+        location: 'THE APEX · THE ONLY REAL SKY LEFT',
+        mood: CutsceneMood.present,
+        narration: [
+          'There is one way to stop the cycle: the override at the crown of the Apex, '
+              'where Saint sits beneath the last real sky in Verge City. James climbs.',
+        ],
+        lines: [
+          DialogueLine(Speakers.books, '(comm) I\'ll hold the lifts and the doors for you. Whatever it costs.'),
+          DialogueLine(Speakers.james, '(comm) Books—'),
+          DialogueLine(Speakers.books, '(comm) Climb, son. Go get your sister.'),
+        ],
+        continueLabel: 'CLIMB TO THE TOP OF THE WORLD',
+      )),
+      LevelPhase(_apexAscent()),
+      const CutscenePhase(Cutscene(
+        title: 'FLASHBACK',
+        location: 'A SINK ROOFTOP · THE LULLABY',
+        mood: CutsceneMood.flashback,
+        narration: [
+          'As he climbs, the oldest memory surfaces — Mara at the window, the two of '
+              'them counting lit windows like a sky.',
+        ],
+        lines: [
+          DialogueLine(Speakers.mara, 'Count the stars with me. I\'ll always be one of them.'),
+          DialogueLine(Speakers.narrator, 'You are Millie. Walk out to the edge and count them.'),
+        ],
+        continueLabel: 'PLAY AS MILLIE',
+      )),
+      LevelPhase(_countingStarsFlashback()),
+      const CutscenePhase(Cutscene(
+        title: 'THE CROWN',
+        location: 'THE SUMMIT DATA-CORE · DAWN BREAKING',
+        mood: CutsceneMood.present,
+        narration: [
+          'James reaches the crown, frees Millie from the core, and together they '
+              'finish what she started — her exploit and the wall of evidence, '
+              'broadcast to every screen in the city at once.',
+          'The lights of Verge City flicker — and come up like stars. Then the '
+              'wounded spire begins to flood and fall.',
+        ],
+        lines: [
+          DialogueLine(Speakers.millie, 'It\'s uploading. It\'s actually— James, it\'s working.'),
+          DialogueLine(Speakers.james, 'Then we don\'t stay to watch. Move — the whole crown\'s coming down.'),
+        ],
+        continueLabel: 'GET HER OUT',
+      )),
+      LevelPhase(_apexEscape()),
+      const CutscenePhase(Cutscene(
+        title: 'THE TOP OF THE WORLD',
+        location: 'THE BROKEN LIP OF THE APEX · SUNRISE',
+        mood: CutsceneMood.victory,
+        narration: [
+          'Dawn, on the broken edge of the Apex, the city laid out below and — for '
+              'the first time in years — actually visible. Millie is alive: thinner, '
+              'scarred, changed. But hers.',
+        ],
+        lines: [
+          DialogueLine(Speakers.millie, 'You climbed to the top of the world.'),
+          DialogueLine(Speakers.james, 'You said you\'d find me here. Figured I\'d save you the walk.'),
+          DialogueLine(Speakers.narrator, 'She presses the last crane into his scarred hand and finishes the lullaby.'),
+          DialogueLine(Speakers.millie, 'Count the stars with me, big brother.'),
+          DialogueLine(Speakers.james, 'All of them. We\'ve got time.'),
+        ],
+        continueLabel: 'THE END',
+      )),
     ],
   );
 }
 
-const LevelConfig _promiseFlashback = LevelConfig(
-  id: 'ep5_promise_flashback',
-  character: Character.aria,
-  theme: DistrictTheme.lowtownNight,
-  mechanics: {MechanicType.run},
-  flashback: true,
-  objective: 'Walk out to the edge',
-  bannerLine: 'No rush. Some promises you walk to.',
-  worldWidth: 44,
-  worldHeight: 22,
-  start: Pt(4, 11),
-  goal: Pt(38, 11),
-  goalLabel: 'THE EDGE',
-  hazards: [
-    Hazard(x: 0, y: 21, width: 44, height: 1),
-  ],
-  platforms: [
-    Platform(x: 0, y: 14, width: 40, height: 8),
-  ],
-  pickups: [
-    PickupSpawn(PickupKind.marker, x: 38, y: 11, note: '“Pinky. Promise.” Two small hands hook together over a sea of neon.'),
-  ],
-);
+LevelConfig _apexAscent() {
+  return LevelConfig(
+    id: 'ep5_apex_ascent',
+    character: Character.james,
+    theme: DistrictTheme.spire,
+    mechanics: const {MechanicType.climb, MechanicType.parkour, MechanicType.shoot},
+    objective: 'Ascend the Apex to the summit data-core',
+    bannerLine: 'Climb the rigging · wall-jump the shafts · shoot through',
+    worldWidth: 66,
+    worldHeight: 128,
+    killY: 126,
+    start: const Pt(8, 112),
+    goal: const Pt(30, 9),
+    goalLabel: 'THE CROWN',
+    platforms: const [
+      Platform(x: 0, y: 116, width: 66, height: 12), // ground floor
+      Platform(x: 0, y: 98, width: 28, height: 2),
+      Platform(x: 34, y: 80, width: 32, height: 2),
+      Platform(x: 36, y: 60, width: 30, height: 2),
+      Platform(x: 6, y: 50, width: 18, height: 2),
+      Platform(x: 0, y: 38, width: 22, height: 2),
+      Platform(x: 30, y: 26, width: 30, height: 2),
+      Platform(x: 0, y: 12, width: 66, height: 2), // summit
+    ],
+    ladders: [
+      Build.ladder(x: 10, topY: 96, bottomY: 116),
+      Build.ladder(x: 54, topY: 58, bottomY: 80),
+      Build.ladder(x: 14, topY: 24, bottomY: 38),
+    ],
+    walls: const [
+      Wall(x: 36, y: 60, width: 1.6, height: 20), // wall-jump shaft between floors
+      Wall(x: 44, y: 60, width: 1.6, height: 20),
+    ],
+    enemies: [
+      ...Build.enemiesAt(EnemyKind.grunt, [18, 50, 40], 98, patrol: 6),
+      ...Build.enemiesAt(EnemyKind.drone, [40, 10], 62),
+      ...Build.enemiesAt(EnemyKind.grunt, [40], 12, patrol: 8),
+    ],
+    checkpoints: const [Pt(8, 112), Pt(8, 96), Pt(50, 78), Pt(40, 58), Pt(8, 36)],
+    pickups: const [
+      PickupSpawn(PickupKind.marker, x: 50, y: 78, note: 'Saint-Cloud logs — every crime, time-stamped. She was right about all of it.'),
+    ],
+    npcs: const [
+      NpcSpawn(NpcKind.saint, x: 46, y: 12, facing: -1, lines: [
+        DialogueLine(Speakers.saint, 'The devoted brother. You climbed my whole tower for her.'),
+        DialogueLine(Speakers.saint, 'She is a resource, James. They all are. The city runs on what we render down.'),
+        DialogueLine(Speakers.james, 'Not anymore. Step away from the core.'),
+        DialogueLine(Speakers.saint, 'You won\'t reach the override in time. No one ever does.'),
+        DialogueLine(Speakers.james, 'She already did. I\'m just here to press the last key.'),
+      ]),
+      NpcSpawn(NpcKind.millie, x: 22, y: 12, facing: 1, lines: [
+        DialogueLine(Speakers.millie, 'James? You\'re— of course you are. You absolute idiot.'),
+        DialogueLine(Speakers.james, 'Took the words right out of my mouth. Can you stand?'),
+        DialogueLine(Speakers.millie, 'Plug me into the core. We finish this together or not at all.'),
+      ]),
+    ],
+    dialogueTriggers: const [
+      DialogueTrigger(x: 8, lines: [DialogueLine(Speakers.james, 'All the way up. For her.')]),
+    ],
+  );
+}
 
-const LevelConfig _spireAscent = LevelConfig(
-  id: 'ep5_spire_ascent',
-  character: Character.kade,
-  theme: DistrictTheme.spire,
-  mechanics: {MechanicType.climb, MechanicType.parkour, MechanicType.shoot},
-  objective: 'Ascend the Spire to the summit data-core',
-  bannerLine: 'Climb ladders · wall-jump the shafts · B / J shoots.',
-  worldWidth: 60,
-  worldHeight: 122,
-  start: Pt(8, 107),
-  goal: Pt(30, 9),
-  goalLabel: 'THE SUMMIT',
-  platforms: [
-    Platform(x: 0, y: 110, width: 60, height: 12), // ground floor
-    Platform(x: 0, y: 92, width: 26, height: 2),
-    Platform(x: 30, y: 72, width: 30, height: 2),
-    Platform(x: 34, y: 52, width: 26, height: 2),
-    Platform(x: 6, y: 44, width: 16, height: 2),
-    Platform(x: 0, y: 34, width: 20, height: 2),
-    Platform(x: 0, y: 12, width: 60, height: 2), // summit
-  ],
-  ladders: [
-    Ladder(x: 10, y: 89, width: 2.6, height: 23),
-    Ladder(x: 50, y: 51, width: 2.6, height: 23),
-    Ladder(x: 14, y: 10, width: 2.6, height: 26),
-  ],
-  walls: [
-    Wall(x: 34, y: 72, width: 1.6, height: 20), // wall-jump shaft between F1 and F2
-    Wall(x: 42, y: 72, width: 1.6, height: 20),
-  ],
-  enemies: [
-    EnemySpawn(EnemyKind.grunt, x: 18, y: 90, patrol: 6),
-    EnemySpawn(EnemyKind.drone, x: 40, y: 62),
-    EnemySpawn(EnemyKind.grunt, x: 46, y: 50, patrol: 6),
-    EnemySpawn(EnemyKind.drone, x: 10, y: 26),
-    EnemySpawn(EnemyKind.grunt, x: 40, y: 10, patrol: 8),
-  ],
-  pickups: [
-    PickupSpawn(PickupKind.marker, x: 46, y: 70, note: 'Halcyon security logs — every crime, time-stamped. Aria was right.'),
-    PickupSpawn(PickupKind.marker, x: 30, y: 10, note: 'The summit. The data-core. And a silhouette you’d know anywhere.'),
-  ],
-);
+LevelConfig _countingStarsFlashback() {
+  return LevelConfig(
+    id: 'ep5_counting_stars_flashback',
+    character: Character.millie,
+    theme: DistrictTheme.lowtownNight,
+    mechanics: const {MechanicType.run},
+    flashback: true,
+    objective: 'Walk out to the edge and count the stars',
+    bannerLine: 'Some promises you walk to.',
+    worldWidth: 48,
+    worldHeight: 22,
+    killY: 20,
+    start: const Pt(4, 11),
+    goal: const Pt(42, 11),
+    goalLabel: 'THE EDGE',
+    platforms: const [Platform(x: 0, y: 14, width: 46, height: 8)],
+    pickups: const [
+      PickupSpawn(PickupKind.marker, x: 42, y: 11, note: '"One… two… three…" Two small voices, counting other people\'s windows like a sky.'),
+    ],
+    dialogueTriggers: const [
+      DialogueTrigger(x: 2, lines: [DialogueLine(Speakers.youngMillie, 'Budge up, James. I can\'t see the good ones from here.')]),
+      DialogueTrigger(x: 30, lines: [DialogueLine(Speakers.mara, '(from the window) That one\'s yours, Millie. The bright stubborn one.')]),
+    ],
+  );
+}
+
+LevelConfig _apexEscape() {
+  return LevelConfig(
+    id: 'ep5_apex_escape',
+    character: Character.james,
+    theme: DistrictTheme.sunken,
+    mechanics: const {MechanicType.run, MechanicType.swim, MechanicType.climb},
+    objective: 'Get out before the crown floods and falls',
+    bannerLine: 'Run the collapse · swim the flooded shaft · climb to the dawn',
+    worldWidth: 176,
+    worldHeight: 36,
+    killY: 33,
+    start: const Pt(4, 9),
+    goal: const Pt(168, 7),
+    goalLabel: 'THE BROKEN LIP',
+    platforms: [
+      ...Build.roofRun(x0: 0, count: 5, width: 9, gap: 3.5, baseY: 12, vary: 1.6), // collapsing floors (run)
+      const Platform(x: 64, y: 30, width: 60, height: 6), // flooded shaft floor
+      const Platform(x: 120, y: 6, width: 18, height: 2), // climb-out ledge
+      Build.floor(x: 138, width: 38, y: 13, depth: 10), // final run to the lip
+    ],
+    waters: const [WaterZone(x: 60, y: 16, width: 66, height: 20)],
+    ladders: [Build.ladder(x: 122, topY: 5, bottomY: 30)],
+    checkpoints: const [Pt(4, 9), Pt(66, 14), Pt(124, 5), Pt(150, 11)],
+    pickups: const [
+      PickupSpawn(PickupKind.air, x: 78, y: 20),
+      PickupSpawn(PickupKind.air, x: 104, y: 20),
+      PickupSpawn(PickupKind.marker, x: 168, y: 7, note: 'Dawn. Real dawn. And Millie\'s hand in his.'),
+    ],
+    dialogueTriggers: const [
+      DialogueTrigger(x: 2, lines: [
+        DialogueLine(Speakers.millie, '(beside you) Go, go — I\'m right behind you!'),
+      ]),
+      DialogueTrigger(x: 58, lines: [DialogueLine(Speakers.james, 'Shaft\'s flooded. Big breath — we swim it.')]),
+      DialogueTrigger(x: 140, blocking: true, lines: [
+        DialogueLine(Speakers.millie, 'James. Look at the city.'),
+        DialogueLine(Speakers.james, 'I see it, Mil. Everyone can see it now.'),
+      ]),
+    ],
+  );
+}

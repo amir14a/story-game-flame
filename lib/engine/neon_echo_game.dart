@@ -12,14 +12,14 @@ import '../story/models/level_config.dart';
 import '../story/story_repository.dart';
 import 'controls.dart';
 import 'game_state.dart';
+import 'narrative/dialogue_runner.dart';
 import 'story_director.dart';
 
 /// The root Flame game. A [Forge2DGame] so every level runs on the Box2D
 /// physics world; the active [world] is swapped out for each [LevelScene].
 ///
-/// It owns the cross-cutting singletons — input, state, the story repository and
-/// the [StoryDirector] that walks the screenplay — and routes keyboard input
-/// into the shared [GameInput].
+/// Owns the cross-cutting singletons — input, state, the story, the
+/// [StoryDirector] and the in-game [DialogueRunner] — and routes keyboard input.
 class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   NeonEchoGame()
       : super(
@@ -30,25 +30,37 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   final GameInput input = GameInput();
   final GameState state = GameState();
   final StoryRepository story = StoryRepository();
+  final DialogueRunner narrative = DialogueRunner();
 
   late final StoryDirector director;
   late final Controls controls;
 
-  /// Theme read by the [CityBackdrop] to pick its atmosphere.
   DistrictTheme backdropTheme = DistrictTheme.rooftops;
-
-  /// The cutscene currently being shown (read by the cutscene overlay).
   Cutscene? currentCutscene;
 
   bool _inLevel = false;
   bool _paused = false;
   bool get isPaused => _paused;
+  bool get isInLevel => _inLevel;
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     camera.backdrop = CityBackdrop();
-    controls = Controls();
+
+    // The controls live in the viewport for the whole session and are merely
+    // shown/hidden — adding/removing them was the cause of them vanishing.
+    controls = Controls()..active = false;
+    await camera.viewport.add(controls);
+
+    // Blocking dialogue (meetings / key comms) soft-pauses the action.
+    narrative.onBlockingStart = pauseEngine;
+    narrative.onBlockingEnd = () {
+      if (_inLevel && !_paused) {
+        resumeEngine();
+      }
+    };
+
     director = StoryDirector(this);
     director.showMainMenu();
   }
@@ -58,41 +70,40 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
     super.update(dt);
     if (_inLevel && !_paused) {
       state.tick(dt);
+      narrative.tick(dt);
     }
   }
 
   // --------------------------------------------------------------- level mode
-  /// Marks the game as actively simulating a level: shows the controls and
-  /// resumes the engine.
   void enterLevelMode() {
     _inLevel = true;
     _paused = false;
-    if (!controls.isMounted) {
-      camera.viewport.add(controls);
-    }
+    controls.active = true;
     resumeEngine();
   }
 
-  /// Freezes the world for menus / cutscenes and hides the controls.
   void enterOverlayMode() {
     _inLevel = false;
     _paused = false;
     input.clear();
-    if (controls.isMounted) {
-      controls.removeFromParent();
-    }
+    narrative.reset();
+    controls.active = false;
     pauseEngine();
   }
 
   void togglePause() {
-    if (!_inLevel) return;
+    if (!_inLevel) {
+      return;
+    }
     _paused = !_paused;
     if (_paused) {
       input.clear();
+      controls.active = false;
       pauseEngine();
       overlays.add('pause');
     } else {
       overlays.remove('pause');
+      controls.active = true;
       resumeEngine();
     }
   }
@@ -108,6 +119,12 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
     LogicalKeyboardKey.enter,
   };
   static final _jump = {LogicalKeyboardKey.space};
+  static final _advance = {
+    LogicalKeyboardKey.space,
+    LogicalKeyboardKey.enter,
+    LogicalKeyboardKey.keyJ,
+    LogicalKeyboardKey.keyK,
+  };
 
   // ---- debug cheat: the Konami code unlocks every episode ----
   static final List<LogicalKeyboardKey> _cheatSequence = [
@@ -124,7 +141,6 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   ];
   final List<LogicalKeyboardKey> _cheatBuffer = [];
 
-  /// In debug builds only, watch for the Konami code and unlock all episodes.
   void _checkCheat(KeyEvent event) {
     if (!kDebugMode || event is! KeyDownEvent) {
       return;
@@ -149,7 +165,14 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
     _checkCheat(event);
 
-    // Pause toggle on key-down.
+    // While a blocking exchange is up, the action keys advance it.
+    if (narrative.isBlocking) {
+      if (event is KeyDownEvent && _advance.contains(event.logicalKey)) {
+        narrative.advance();
+      }
+      return KeyEventResult.handled;
+    }
+
     if (event is KeyDownEvent &&
         (event.logicalKey == LogicalKeyboardKey.escape ||
             event.logicalKey == LogicalKeyboardKey.keyP)) {
