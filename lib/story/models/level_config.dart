@@ -136,8 +136,10 @@ class PickupSpawn {
 // ---------------------------------------------------------------------------
 
 /// A story character the player can meet inside a level (Books, Cray, Saint, or
-/// Millie). Drives the figure's art and the face-to-face exchange.
-enum NpcKind { books, cray, saint, millie }
+/// a sibling). Drives the figure's art and the face-to-face exchange. `james`
+/// and `millie` let the *other* sibling appear in a flashback so the two can
+/// actually meet.
+enum NpcKind { books, cray, saint, millie, james }
 
 /// An invisible zone that fires a dialogue sequence the first time the player
 /// crosses it. Non-[blocking] lines show as ambient subtitles while play
@@ -191,6 +193,7 @@ class LevelConfig {
     required this.start,
     required this.goal,
     this.vehicle = VehicleKind.onFoot,
+    this.companion,
     this.flashback = false,
     this.goalLabel = 'GOAL',
     this.grounds = const [],
@@ -213,6 +216,9 @@ class LevelConfig {
   final DistrictTheme theme;
   final Set<MechanicType> mechanics;
   final VehicleKind vehicle;
+
+  /// The other sibling riding along (drawn as a passenger in flashback vehicles).
+  final Character? companion;
 
   /// HUD objective text.
   final String objective;

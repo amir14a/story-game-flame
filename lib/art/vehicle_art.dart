@@ -14,8 +14,10 @@ abstract final class VehicleArtist {
         Character.millie => (NeonPalette.milliePrimary, NeonPalette.millieSecondary),
       };
 
-  /// A low, sleek courier car. Total length ~3.6m.
-  static void drawCar(Canvas canvas, {required Character character, required double wheelSpin}) {
+  /// A low, sleek courier car. Total length ~3.6m. Pass [companion] to seat the
+  /// other sibling beside the driver (used in flashbacks so they ride together).
+  static void drawCar(Canvas canvas,
+      {required Character character, required double wheelSpin, Character? companion}) {
     final (primary, secondary) = _colors(character);
     const w = 0.08;
 
@@ -43,6 +45,12 @@ abstract final class VehicleArtist {
       ..lineTo(0.9, -0.34)
       ..close();
     Neon.glowPath(canvas, cabin, secondary, w * 0.8, filled: true, fillAlpha: 0.3);
+
+    // occupants — the two siblings ride together in the flashback
+    if (companion != null) {
+      _occupant(canvas, const Offset(-0.5, -0.5), _colors(character).$1);
+      _occupant(canvas, const Offset(0.35, -0.5), _colors(companion).$1);
+    }
 
     // headlight
     Neon.halo(canvas, const Offset(1.85, -0.05), 0.7, NeonPalette.cyan, alpha: 0.6);
@@ -134,6 +142,15 @@ abstract final class VehicleArtist {
     Neon.halo(canvas, const Offset(0, 0), 0.3, NeonPalette.danger, alpha: 0.5);
 
     canvas.restore();
+  }
+
+  /// A small seated figure (head + shoulders) peeking out of the cabin.
+  static void _occupant(Canvas canvas, Offset p, Color color) {
+    Neon.glowCircle(canvas, Offset(p.dx, p.dy), 0.16, color, 0.05, filled: true, fillAlpha: 0.3);
+    final shoulders = Path()
+      ..moveTo(p.dx - 0.17, p.dy + 0.32)
+      ..quadraticBezierTo(p.dx, p.dy + 0.05, p.dx + 0.17, p.dy + 0.32);
+    Neon.glowPath(canvas, shoulders, color, 0.06);
   }
 
   static void _wheel(Canvas canvas, Offset center, double radius, Color color, double spin) {

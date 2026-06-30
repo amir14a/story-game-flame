@@ -57,4 +57,23 @@ void main() {
     }
     expect(seen, containsAll(MechanicType.values));
   });
+
+  test('flashbacks that tell you to chase/meet James actually contain James', () {
+    final levels = <String, LevelConfig>{};
+    for (final ep in story.episodes) {
+      for (final phase in ep.phases) {
+        if (phase is LevelPhase) levels[phase.config.id] = phase.config;
+      }
+    }
+    bool jamesPresent(String id) {
+      final c = levels[id]!;
+      return c.npcs.any((n) => n.kind == NpcKind.james) || c.companion == Character.james;
+    }
+
+    // On-foot flashbacks where Millie chases/sits with her brother.
+    expect(jamesPresent('ep1_crane_flashback'), isTrue);
+    expect(jamesPresent('ep5_counting_stars_flashback'), isTrue);
+    // Driving flashback: James rides shotgun.
+    expect(levels['ep2_first_light_flashback']!.companion, Character.james);
+  });
 }
