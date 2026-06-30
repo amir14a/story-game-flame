@@ -18,6 +18,7 @@ class StoryDirector {
     OverlayIds.episodeSelect,
     OverlayIds.cutscene,
     OverlayIds.hud,
+    OverlayIds.dialogue,
     OverlayIds.levelCleared,
     OverlayIds.gameOver,
     OverlayIds.victory,
@@ -61,9 +62,19 @@ class StoryDirector {
 
   void _loadLevel(LevelConfig config) {
     game.currentCutscene = null;
-    _setOverlay(OverlayIds.hud);
+    _setLevelOverlays();
     game.world = LevelScene(config, episodeLabel: 'EPISODE ${_episode.number} · ${_episode.title}');
     game.enterLevelMode();
+  }
+
+  /// Levels show the HUD and the in-game dialogue layer together.
+  void _setLevelOverlays() {
+    for (final name in _allStoryOverlays) {
+      game.overlays.remove(name);
+    }
+    game.overlays.remove(OverlayIds.pause);
+    game.overlays.add(OverlayIds.hud);
+    game.overlays.add(OverlayIds.dialogue);
   }
 
   // --------------------------------------------------------------- advance

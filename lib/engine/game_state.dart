@@ -16,7 +16,7 @@ class GameState extends ChangeNotifier {
   int unlockedEpisode = 1;
 
   // ---- live level values (HUD) ------------------------------------------
-  Character activeCharacter = Character.kade;
+  Character activeCharacter = Character.james;
   String episodeTitle = '';
   String objective = '';
   bool flashback = false;

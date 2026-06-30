@@ -13,17 +13,12 @@ import 'enemy.dart';
 import 'markers.dart';
 import 'projectile.dart';
 
-double _approach(double current, double target, double maxDelta) {
-  if ((target - current).abs() <= maxDelta) {
-    return target;
-  }
-  return current + maxDelta * (target > current ? 1 : -1);
-}
-
-/// Shared base for the player-driven vehicles. A single fixed-rotation body with
-/// a rounded (circle) collider so it rolls smoothly over the ground chain. The
-/// player throttles with right/left (or the joystick), hops with jump, and — on
-/// the bike — fires forward.
+/// Shared base for the player-driven vehicles.
+///
+/// The chassis is a **freely rotating** dynamic body resting on **two sprung
+/// wheels** (Forge2D [WheelJoint]s). That means it naturally **leans into climbs
+/// and downhills** (bug 1) and there is **no jump** (bug 2) — the player only
+/// throttles forward/back with a horizontal drive force.
 abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCallbacks, LightEmitter {
   VehicleActor({
     required this.character,
@@ -37,12 +32,16 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
   final Set<MechanicType> mechanics;
   final Vector2 _spawn;
 
+  // --- per-vehicle tuning ---
   double get maxSpeed;
-  double get accel;
-  double get brake;
-  double get hopSpeed;
-  double get colliderRadius => 0.72;
+  double get driveForce;
+  double get halfLength;
+  double get halfHeight => 0.42;
+  double get wheelRadius => 0.42;
+  double get wheelBase => halfLength * 0.72;
+  double get brakeDrag => 6.0;
 
+  final List<Body> _wheels = [];
   double _wheelSpin = 0;
   double _invuln = 0;
   double _fireCd = 0;
@@ -55,23 +54,47 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
   @override
   double get lightRadius => 9.0;
   @override
-  Color get lightColor => NeonPalette.cyan;
+  Color get lightColor => NeonPalette.jamesPrimary;
 
   @override
   Body createBody() {
-    final shape = CircleShape()
-      ..radius = colliderRadius
-      ..position.setValues(0, 0.28);
+    final shape = PolygonShape()..setAsBoxXY(halfLength, halfHeight);
     final def = BodyDef(
       type: BodyType.dynamic,
       position: _spawn,
-      fixedRotation: true,
-      bullet: true,
+      angularDamping: 0.6,
       userData: this,
     );
-    final body = world.createBody(def);
-    body.createFixture(FixtureDef(shape, friction: 0.35, density: 1.0, restitution: 0.0));
-    return body;
+    final b = world.createBody(def);
+    b.createFixture(FixtureDef(shape, density: 1.0, friction: 0.25, restitution: 0.0));
+    return b;
+  }
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _buildWheels();
+  }
+
+  void _buildWheels() {
+    final axis = Vector2(0, 1); // vertical suspension travel
+    for (final dx in [-wheelBase, wheelBase]) {
+      final wheelDef = BodyDef(
+        type: BodyType.dynamic,
+        position: body.position + Vector2(dx, halfHeight + wheelRadius * 0.3),
+        userData: this,
+      );
+      final wheel = world.createBody(wheelDef);
+      wheel.createFixture(
+        FixtureDef(CircleShape()..radius = wheelRadius, density: 1.0, friction: 1.4, restitution: 0.0),
+      );
+      final jd = WheelJointDef<Body, Body>()
+        ..frequencyHz = 5.5
+        ..dampingRatio = 0.7;
+      jd.initialize(body, wheel, wheel.position, axis);
+      world.createJoint(WheelJoint(jd));
+      _wheels.add(wheel);
+    }
   }
 
   @override
@@ -81,9 +104,9 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
     if (_fireCd > 0) _fireCd -= dt;
 
     final input = game.input;
-    final v = body.linearVelocity;
-    final jumpPressed = input.consumeJump();
+    input.consumeJump(); // vehicles never jump — swallow the press
 
+    final v = body.linearVelocity;
     var throttle = 0;
     if (input.moveX > 0.1 || input.up) {
       throttle = 1;
@@ -91,19 +114,23 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
       throttle = -1;
     }
 
-    final target = throttle > 0
-        ? maxSpeed
-        : throttle < 0
-            ? -maxSpeed * 0.4
-            : 0.0;
-    final rate = throttle != 0 ? accel : brake;
-    var nvx = _approach(v.x, target, rate * dt);
-    var nvy = v.y;
-    if (jumpPressed && v.y > -2.0) {
-      nvy = -hopSpeed; // arcade hop over gaps / barricades
+    // Apply the drive force low on the chassis to limit nose-lift / tipping.
+    final point = body.worldPoint(Vector2(0, halfHeight * 0.8));
+    if (throttle > 0 && v.x < maxSpeed) {
+      body.applyForce(Vector2(driveForce, 0), point: point);
+    } else if (throttle < 0 && v.x > -maxSpeed * 0.5) {
+      body.applyForce(Vector2(-driveForce, 0), point: point);
+    } else {
+      body.applyForce(Vector2(-v.x * brakeDrag * body.mass * 0.2, 0));
     }
-    body.linearVelocity = Vector2(nvx, nvy);
-    _wheelSpin += nvx * dt * 1.6;
+
+    // Gentle self-right only if almost completely flipped (never fights normal
+    // slope tilt, which stays well under ~0.6 rad on the passable terrain).
+    if (body.angle.abs() > 1.5) {
+      body.applyTorque(-body.angle.sign * 12.0 - body.angularVelocity * 3.0);
+    }
+
+    _wheelSpin += v.x * dt * 1.6;
 
     if (_canShoot && input.fireHeld) {
       _shoot();
@@ -115,7 +142,7 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
       return;
     }
     _fireCd = GameConfig.fireCooldown;
-    final spawn = body.position + Vector2(1.2, -0.3);
+    final spawn = body.worldPoint(Vector2(halfLength + 0.2, -0.3));
     world.add(Bullet(spawn: spawn, direction: Vector2(1, 0)));
   }
 
@@ -125,24 +152,15 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
     }
     _invuln = GameConfig.hitInvulnerability;
     game.state.damage(amount);
-    body.linearVelocity = Vector2(body.linearVelocity.x * 0.5, -6.0);
     if (game.state.isDead) {
       game.director.onPlayerDied();
     }
   }
 
-  void _crash() {
-    if (game.state.isDead || _reached) {
-      return;
-    }
-    game.state.damage(game.state.maxHealth);
-    game.director.onPlayerDied();
-  }
-
   @override
   void beginContact(Object other, Contact contact) {
     if (other is HazardMarker) {
-      _crash();
+      hit();
     } else if (other is GoalMarker) {
       if (!_reached) {
         _reached = true;
@@ -151,6 +169,17 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
     } else if (other is Enemy) {
       hit();
     }
+  }
+
+  @override
+  void onRemove() {
+    if (!world.isRemoving) {
+      for (final wheel in _wheels) {
+        world.destroyBody(wheel);
+      }
+    }
+    _wheels.clear();
+    super.onRemove();
   }
 
   @override
@@ -164,18 +193,18 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
   void drawVehicle(Canvas canvas);
 }
 
-/// The Episode 2 courier car.
+/// The Episode 2 courier hauler.
 class CarActor extends VehicleActor {
   CarActor({required super.character, required super.mechanics, required super.spawn});
 
   @override
   double get maxSpeed => GameConfig.carMaxSpeed;
   @override
-  double get accel => GameConfig.carAccel;
+  double get driveForce => 150;
   @override
-  double get brake => GameConfig.carBrake;
+  double get halfLength => 1.7;
   @override
-  double get hopSpeed => GameConfig.carTurnImpulse;
+  double get wheelRadius => 0.46;
 
   @override
   void drawVehicle(Canvas canvas) {
@@ -190,13 +219,13 @@ class BikeActor extends VehicleActor {
   @override
   double get maxSpeed => GameConfig.bikeMaxSpeed;
   @override
-  double get accel => GameConfig.bikeAccel;
+  double get driveForce => 95;
   @override
-  double get brake => GameConfig.carBrake;
+  double get halfLength => 1.0;
   @override
-  double get hopSpeed => GameConfig.bikeJumpImpulse;
+  double get wheelRadius => 0.42;
   @override
-  double get colliderRadius => 0.6;
+  double get wheelBase => 0.92;
 
   @override
   void drawVehicle(Canvas canvas) {
