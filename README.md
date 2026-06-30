@@ -94,6 +94,23 @@ lib/
 
 See [`DESIGN.md`](DESIGN.md) for how these fit together.
 
+## Deploy to GitHub Pages
+
+The web build is auto-published to GitHub Pages on every push to `main`.
+
+* **Workflow:** [`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml)
+  installs Flutter, runs `analyze` + `test`, builds
+  `flutter build web --release --base-href "/<repo>/"`, and publishes the output
+  to the **`gh-pages`** branch.
+* **One-time setup:** in the repository's **Settings → Pages**, set
+  *Source* to **Deploy from a branch**, branch **`gh-pages`**, folder **`/ (root)`**.
+  The site then serves at `https://<owner>.github.io/<repo>/`
+  (for this repo: `https://amir14a.github.io/story-game-flame/`).
+* The `gh-pages` branch already contains an initial export so Pages can be
+  configured immediately; the workflow keeps it up to date.
+* Serving from a **custom domain at the root** instead? Change the build's
+  `--base-href` to `"/"` in the workflow.
+
 ## Notes
 
 * No image or audio files are bundled. All visuals are procedural vector art, so

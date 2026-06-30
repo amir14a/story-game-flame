@@ -1,0 +1,59 @@
+name: Deploy web to GitHub Pages
+
+# Builds the Flutter web export and publishes it to the `gh-pages` branch,
+# which GitHub Pages is configured to serve. Runs on every push to `main`
+# (and can be run manually from the Actions tab).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# The deploy step needs to push the built site to the gh-pages branch.
+permissions:
+  contents: write
+
+# Never let two deploys race each other.
+concurrency:
+  group: deploy-web-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.4'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      # base-href must match the Pages sub-path. For a project site this is
+      # "/<repo>/"; github.event.repository.name keeps it correct if the repo
+      # is renamed. If you serve from a custom domain at the root, change this
+      # to "/".
+      - name: Build web
+        run: flutter build web --release --base-href "/${{ github.event.repository.name }}/"
+
+      - name: Publish to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
+          publish_branch: gh-pages
+          force_orphan: true
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'deploy: ${{ github.sha }}'
