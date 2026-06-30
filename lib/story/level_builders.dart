@@ -37,6 +37,12 @@ abstract final class Build {
 
   /// A continuous, gently rolling road for vehicles — no gaps, shallow hills, so
   /// it is always passable without jumping.
+  ///
+  /// Points are evenly spaced by [step] (>= a few metres), which keeps every
+  /// chain segment well above Forge2D's minimum vertex spacing. The road always
+  /// ends *exactly* at [x1], and only if that final point is far enough from the
+  /// previous one — appending a near-coincident vertex produces a degenerate
+  /// `ChainShape` that throws and leaves the level empty.
   static GroundProfile road({
     required double x0,
     required double x1,
@@ -46,11 +52,12 @@ abstract final class Build {
     double step = 4,
     double phase = 0,
   }) {
+    double curve(double x) => y + amp * math.sin(x * 2 * math.pi / wavelength + phase);
     final pts = <Pt>[];
-    for (var x = x0; x <= x1; x += step) {
-      pts.add(Pt(x, y + amp * math.sin(x * 2 * math.pi / wavelength + phase)));
+    for (var x = x0; x < x1 - 0.5; x += step) {
+      pts.add(Pt(x, curve(x)));
     }
-    pts.add(Pt(x1, y));
+    pts.add(Pt(x1, curve(x1))); // exact end, on the curve, never a duplicate
     return GroundProfile(pts);
   }
 
