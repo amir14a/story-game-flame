@@ -36,6 +36,7 @@ class StoryNpc extends PositionComponent with HasGameReference<NeonEchoGame>, Li
         NpcKind.cray => 'CRAY',
         NpcKind.saint => 'SAINT',
         NpcKind.millie => 'MILLIE',
+        NpcKind.james => 'JAMES',
       };
 
   @override
@@ -44,6 +45,7 @@ class StoryNpc extends PositionComponent with HasGameReference<NeonEchoGame>, Li
         NpcKind.cray => NeonPalette.cray,
         NpcKind.saint => NeonPalette.saint,
         NpcKind.millie => NeonPalette.milliePrimary,
+        NpcKind.james => NeonPalette.jamesPrimary,
       };
 
   @override

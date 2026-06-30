@@ -158,6 +158,7 @@ LevelConfig _firstLightFlashback() {
     character: Character.millie,
     theme: DistrictTheme.skyway,
     vehicle: VehicleKind.car,
+    companion: Character.james, // James rides shotgun
     mechanics: const {MechanicType.drive},
     flashback: true,
     objective: 'Cruise the empty Loop to the overlook',

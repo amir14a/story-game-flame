@@ -24,12 +24,16 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
     required this.character,
     required this.mechanics,
     required Vector2 spawn,
+    this.companion,
   }) : _spawn = spawn.clone() {
     renderBody = false;
   }
 
   final Character character;
   final Set<MechanicType> mechanics;
+
+  /// The other sibling riding along (a flashback passenger), if any.
+  final Character? companion;
   final Vector2 _spawn;
 
   // --- per-vehicle tuning ---
@@ -195,7 +199,7 @@ abstract class VehicleActor extends BodyComponent<NeonEchoGame> with ContactCall
 
 /// The Episode 2 courier hauler.
 class CarActor extends VehicleActor {
-  CarActor({required super.character, required super.mechanics, required super.spawn});
+  CarActor({required super.character, required super.mechanics, required super.spawn, super.companion});
 
   @override
   double get maxSpeed => GameConfig.carMaxSpeed;
@@ -208,13 +212,13 @@ class CarActor extends VehicleActor {
 
   @override
   void drawVehicle(Canvas canvas) {
-    VehicleArtist.drawCar(canvas, character: character, wheelSpin: _wheelSpin);
+    VehicleArtist.drawCar(canvas, character: character, wheelSpin: _wheelSpin, companion: companion);
   }
 }
 
 /// The Episode 4 motorcycle (also shoots).
 class BikeActor extends VehicleActor {
-  BikeActor({required super.character, required super.mechanics, required super.spawn});
+  BikeActor({required super.character, required super.mechanics, required super.spawn, super.companion});
 
   @override
   double get maxSpeed => GameConfig.bikeMaxSpeed;

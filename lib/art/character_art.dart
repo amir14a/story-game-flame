@@ -88,11 +88,16 @@ abstract final class CharacterArtist {
       draw(canvas, character: Character.millie, t: t, facing: facing, pose: pose);
       return;
     }
+    if (kind == NpcKind.james) {
+      draw(canvas, character: Character.james, t: t, facing: facing, pose: pose);
+      return;
+    }
     final (Color p, Color s, _Build build) = switch (kind) {
       NpcKind.books => (NeonPalette.books, const Color(0xFF8A5A1E), _jamesBuild),
       NpcKind.cray => (NeonPalette.cray, NeonPalette.hollowSteel, _gruntBuild),
       NpcKind.saint => (NeonPalette.saint, const Color(0xFFB89B5E), _millieBuild),
       NpcKind.millie => (NeonPalette.milliePrimary, NeonPalette.millieSecondary, _millieBuild),
+      NpcKind.james => (NeonPalette.jamesPrimary, NeonPalette.jamesSecondary, _jamesBuild),
     };
     _drawFigure(canvas, p, s, character: null, build: build, t: t, facing: facing, pose: pose);
 
