@@ -4,7 +4,7 @@
 abstract final class OverlayIds {
   static const String mainMenu = 'main_menu';
   static const String episodeSelect = 'episode_select';
-  static const String cutscene = 'cutscene';
+  static const String cutsceneHud = 'cutscene_hud';
   static const String hud = 'hud';
   static const String dialogue = 'dialogue';
   static const String pause = 'pause';

@@ -1,4 +1,4 @@
-import 'dialogue.dart';
+import 'cutscene_config.dart';
 import 'level_config.dart';
 
 /// One step inside an episode: either a scripted [CutscenePhase] or a playable
@@ -9,8 +9,8 @@ sealed class StoryPhase {
 
 /// A non-interactive story beat (intro / flashback intro / cliffhanger / win).
 class CutscenePhase extends StoryPhase {
-  const CutscenePhase(this.cutscene);
-  final Cutscene cutscene;
+  const CutscenePhase(this.config);
+  final CutsceneConfig config;
 }
 
 /// A playable level built from a [LevelConfig].

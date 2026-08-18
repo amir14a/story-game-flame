@@ -1,4 +1,5 @@
 import '../level_builders.dart';
+import '../models/cutscene_config.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
@@ -12,65 +13,71 @@ Episode buildEpisodeTwo() {
     tagline: 'THE LOOP · DRIVE · SHOOT · PARKOUR · CLIMB',
     theme: DistrictTheme.skyway,
     phases: [
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 2',
         location: 'A LOOP ON-RAMP · SOAKED AND BLEEDING',
         mood: CutsceneMood.present,
-        narration: [
-          'James drags himself out of the Sink\'s black water onto the ring-road. '
+        theme: DistrictTheme.skyway,
+        beats: [
+          NarrationBeat('James drags himself out of the Sink\'s black water onto the ring-road. '
               'The only way across to the Floodworks is the Loop — and tonight Cray\'s '
-              'people own it.',
-        ],
-        lines: [
-          DialogueLine(Speakers.books, '(comm) Find a car, James. Don\'t stop for anything that\'s shooting at you.'),
-          DialogueLine(Speakers.james, '(comm) That\'s everything, Books.'),
-          DialogueLine(Speakers.books, '(comm) Then don\'t stop.'),
+              'people own it.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.books, '(comm) Find a car, James. Don\'t stop for anything that\'s shooting at you.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(comm) That\'s everything, Books.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.books, '(comm) Then don\'t stop.')),
         ],
         continueLabel: 'HIT THE LOOP',
       )),
       LevelPhase(_loopDrive()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'THE WRECK-JAM',
         location: 'THE LOOP · A SEIZED TOLL-GATE',
         mood: CutsceneMood.present,
-        narration: [
-          'A rammed interceptor folds the hauler into the barrier. James bails out '
-              'and goes the rest of the way on foot, over the wreckage.',
-        ],
-        lines: [
-          DialogueLine(Speakers.narrator, 'Vault the wreck-jam, climb the toll-gate, and fight to the descent.'),
+        theme: DistrictTheme.skyway,
+        beats: [
+          NarrationBeat('A rammed interceptor folds the hauler into the barrier. James bails out '
+              'and goes the rest of the way on foot, over the wreckage.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'Vault the wreck-jam, climb the toll-gate, and fight to the descent.')),
         ],
         continueLabel: 'ON FOOT',
       )),
       LevelPhase(_loopWreckage()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'FLASHBACK',
         location: 'THE OLD LOOP · 3 A.M., SIX YEARS AGO',
         mood: CutsceneMood.flashback,
-        narration: [
-          'A borrowed car on an empty ring-road. Teenage Millie at the wheel, James '
-              'white-knuckled beside her, both of them laughing at nothing.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, 'Relax! I\'ve done this once. Twice if you count the wall.'),
-          DialogueLine(Speakers.narrator, 'You are Millie. Take the empty Loop to the overlook.'),
+        theme: DistrictTheme.skyway,
+        beats: [
+          NarrationBeat('A borrowed car on an empty ring-road. Teenage Millie at the wheel, James '
+              'white-knuckled beside her, both of them laughing at nothing.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, 'Relax! I\'ve done this once. Twice if you count the wall.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'You are Millie. Take the empty Loop to the overlook.')),
         ],
         continueLabel: 'PLAY AS MILLIE',
       )),
       LevelPhase(_firstLightFlashback()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 2 — ENDING',
         location: 'THE FLOODWORKS DESCENT',
         mood: CutsceneMood.cliffhanger,
-        narration: [
-          'At the descent, the distorted channel that\'s haunted the comm all night '
-              'finally clears. It is unmistakably her.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, '(comm) James. Stop. If you come down here, you undo everything I\'ve bled for.'),
-          DialogueLine(Speakers.millie, '(comm) Please. Go home.'),
-          DialogueLine(Speakers.narrator, 'A charge blows the ramp out from under him. He falls toward the flooded dark.'),
-          DialogueLine(Speakers.james, '(falling) Millie—!'),
+        theme: DistrictTheme.skyway,
+        beats: [
+          NarrationBeat('At the descent, the distorted channel that\'s haunted the comm all night '
+              'finally clears. It is unmistakably her.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, '(comm) James. Stop. If you come down here, you undo everything I\'ve bled for.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.millie, '(comm) Please. Go home.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'A charge blows the ramp out from under him. He falls toward the flooded dark.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(falling) Millie—!')),
         ],
         continueLabel: 'EPISODE 3 ▶',
       )),

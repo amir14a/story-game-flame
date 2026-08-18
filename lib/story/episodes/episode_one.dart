@@ -1,4 +1,5 @@
 import '../level_builders.dart';
+import '../models/cutscene_config.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
@@ -12,51 +13,56 @@ Episode buildEpisodeOne() {
     tagline: 'THE SINK · RUN · PARKOUR · CLIMB · SHOOT',
     theme: DistrictTheme.rooftops,
     phases: [
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 1',
         location: 'THE SINK · A FIRE-ESCAPE · NIGHT',
         mood: CutsceneMood.present,
-        narration: [
-          'Six months of silence. Then a paper crane on the doorstep, folded in '
-              'Millie\'s hand, with three words inside: "Don\'t look for me."',
-          'A second crane is already gone — a street-kid is running with the chip '
-              'that was folded inside it. James goes after them.',
-        ],
-        lines: [
-          DialogueLine(Speakers.james, 'Six months. And now a paper bird.'),
-          DialogueLine(Speakers.james, '…Not this time, Mil. This time I follow the trail.'),
+        theme: DistrictTheme.rooftops,
+        beats: [
+          NarrationBeat('Six months of silence. Then a paper crane on the doorstep, folded in '
+              'Millie\'s hand, with three words inside: "Don\'t look for me."'),
+          PauseBeat(1.0),
+          NarrationBeat('A second crane is already gone — a street-kid is running with the chip '
+              'that was folded inside it. James goes after them.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.james, 'Six months. And now a paper bird.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '…Not this time, Mil. This time I follow the trail.')),
         ],
         continueLabel: 'CHASE THE COURIER',
       )),
       LevelPhase(_sinkChase()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'FLASHBACK',
         location: 'A SINK ROOFTOP · SIXTEEN YEARS AGO',
         mood: CutsceneMood.flashback,
-        narration: [
-          'Before the silence. Before any of it. Just two kids and a sky made of '
-              'other people\'s windows.',
-        ],
-        lines: [
-          DialogueLine(Speakers.youngMillie, 'Can\'t catch me, slow-bones!'),
-          DialogueLine(Speakers.narrator, 'You are Millie. Chase James across the rooftops to the washing-lines.'),
+        theme: DistrictTheme.lowtownNight,
+        beats: [
+          NarrationBeat('Before the silence. Before any of it. Just two kids and a sky made of '
+              'other people\'s windows.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.youngMillie, 'Can\'t catch me, slow-bones!')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'You are Millie. Chase James across the rooftops to the washing-lines.')),
         ],
         continueLabel: 'PLAY AS MILLIE',
       )),
       LevelPhase(_craneFlashback()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 1 — ENDING',
         location: 'RIVET ROW · THE HIGH ROOF',
         mood: CutsceneMood.cliffhanger,
-        narration: [
-          'James corners the courier — a terrified kid, maybe ten.',
-        ],
-        lines: [
-          DialogueLine(Speakers.narrator, 'KID: "She paid me to slow you down! That\'s all, I swear—"'),
-          DialogueLine(Speakers.narrator,
+        theme: DistrictTheme.rooftops,
+        beats: [
+          NarrationBeat('James corners the courier — a terrified kid, maybe ten.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'KID: "She paid me to slow you down! That\'s all, I swear—"')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator,
               'A red dot finds the kid\'s chest. A Mire sniper fires once. The roof '
-              'gives way under the impact and the fight.'),
-          DialogueLine(Speakers.james, '(falling) Floodworks. She\'s in the Floodworks—'),
+              'gives way under the impact and the fight.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(falling) Floodworks. She\'s in the Floodworks—')),
         ],
         continueLabel: 'EPISODE 2 ▶',
       )),

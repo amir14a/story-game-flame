@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../core/overlay_ids.dart';
 import '../core/palette.dart';
 import '../engine/neon_echo_game.dart';
+import '../engine/scenes/cutscene_scene.dart';
 import '../story/models/dialogue.dart';
 import 'widgets.dart';
 
@@ -12,7 +13,7 @@ import 'widgets.dart';
 Map<String, Widget Function(BuildContext, NeonEchoGame)> buildOverlays() => {
       OverlayIds.mainMenu: (context, game) => MainMenuOverlay(game: game),
       OverlayIds.episodeSelect: (context, game) => EpisodeSelectOverlay(game: game),
-      OverlayIds.cutscene: (context, game) => CutsceneOverlay(game: game),
+      OverlayIds.cutsceneHud: (context, game) => CutsceneHudOverlay(game: game),
       OverlayIds.hud: (context, game) => HudOverlay(game: game),
       OverlayIds.dialogue: (context, game) => DialogueOverlay(game: game),
       OverlayIds.pause: (context, game) => PauseOverlay(game: game),
@@ -119,26 +120,56 @@ class EpisodeSelectOverlay extends StatelessWidget {
 }
 
 // ===========================================================================
-// Cutscene (full-screen story beat)
+// In-game cutscene HUD (title + continue button, no text content — text is
+// rendered inside the CutsceneScene world via CutsceneSubtitle).
 // ===========================================================================
-class CutsceneOverlay extends StatefulWidget {
-  const CutsceneOverlay({super.key, required this.game});
+class CutsceneHudOverlay extends StatefulWidget {
+  const CutsceneHudOverlay({super.key, required this.game});
   final NeonEchoGame game;
 
   @override
-  State<CutsceneOverlay> createState() => _CutsceneOverlayState();
+  State<CutsceneHudOverlay> createState() => _CutsceneHudOverlayState();
 }
 
-class _CutsceneOverlayState extends State<CutsceneOverlay> {
-  int _revealed = 1;
+class _CutsceneHudOverlayState extends State<CutsceneHudOverlay> {
   final FocusNode _node = FocusNode();
-
-  Cutscene get _cs => widget.game.currentCutscene!;
 
   @override
   void dispose() {
     _node.dispose();
     super.dispose();
+  }
+
+  CutsceneScene? get _scene {
+    final w = widget.game.world;
+    return w is CutsceneScene ? w : null;
+  }
+
+  void _advance() {
+    final scene = _scene;
+    if (scene == null) return;
+    if (scene.isShowingContinue) {
+      widget.game.director.advance();
+    } else {
+      scene.advanceBeat();
+    }
+  }
+
+  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final advanceKeys = {
+      LogicalKeyboardKey.enter,
+      LogicalKeyboardKey.numpadEnter,
+      LogicalKeyboardKey.space,
+      LogicalKeyboardKey.arrowRight,
+      LogicalKeyboardKey.arrowDown,
+      LogicalKeyboardKey.keyJ,
+    };
+    if (advanceKeys.contains(event.logicalKey)) {
+      _advance();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
   }
 
   ({Color accent, Gradient gradient}) _mood(CutsceneMood mood) {
@@ -175,141 +206,57 @@ class _CutsceneOverlayState extends State<CutsceneOverlay> {
     }
   }
 
-  void _advance() {
-    final lines = _cs.lines;
-    if (_revealed < lines.length) {
-      setState(() => _revealed++);
-    } else {
-      widget.game.director.advance();
-    }
-  }
-
-  KeyEventResult _onKey(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    final advanceKeys = {
-      LogicalKeyboardKey.enter,
-      LogicalKeyboardKey.numpadEnter,
-      LogicalKeyboardKey.space,
-      LogicalKeyboardKey.arrowRight,
-      LogicalKeyboardKey.arrowDown,
-      LogicalKeyboardKey.keyJ,
-    };
-    if (advanceKeys.contains(event.logicalKey)) {
-      _advance();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final cs = _cs;
+    final scene = _scene;
+    if (scene == null) return const SizedBox.shrink();
+    final cs = scene.config;
     final mood = _mood(cs.mood);
-    final allRevealed = _revealed >= cs.lines.length;
-    final shown = cs.lines.take(_revealed.clamp(0, cs.lines.length)).toList();
 
     return Focus(
       focusNode: _node,
       autofocus: true,
       onKeyEvent: _onKey,
-      child: NeonScaffold(
-        accent: mood.accent,
-        gradient: mood.gradient,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: _advance,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(40, 24, 40, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    neonTag(cs.title, color: mood.accent),
-                    const SizedBox(width: 10),
-                    Flexible(
-                      child: Text(cs.location,
-                          style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    reverse: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        for (final n in cs.narration)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: Text(n,
-                                style: const TextStyle(
-                                    color: NeonPalette.textDim,
-                                    fontSize: 15,
-                                    height: 1.5,
-                                    fontStyle: FontStyle.italic)),
-                          ),
-                        const SizedBox(height: 4),
-                        for (var i = 0; i < shown.length; i++)
-                          _DialogueBlock(line: shown[i], typing: i == shown.length - 1),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(allRevealed ? 'ENTER / TAP' : 'ENTER / TAP TO CONTINUE',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: _advance,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: Column(
+            children: [
+              // Title + location tag
+              Row(
+                children: [
+                  neonTag(cs.title, color: mood.accent),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(cs.location,
                         style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2)),
-                    NeonButton(
-                      label: allRevealed ? cs.continueLabel : 'NEXT ▸',
-                      width: 250,
-                      primary: allRevealed,
-                      focused: true,
-                      color: mood.accent,
-                      onTap: _advance,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              // Continue / hint bar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    scene.isShowingContinue ? 'ENTER / TAP' : 'ENTER / TAP TO CONTINUE',
+                    style: const TextStyle(color: NeonPalette.textDim, fontSize: 12, letterSpacing: 2),
+                  ),
+                  NeonButton(
+                    label: scene.isShowingContinue ? cs.continueLabel : 'NEXT ▸',
+                    width: 250,
+                    primary: scene.isShowingContinue,
+                    focused: true,
+                    color: mood.accent,
+                    onTap: _advance,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _DialogueBlock extends StatelessWidget {
-  const _DialogueBlock({required this.line, required this.typing});
-  final DialogueLine line;
-  final bool typing;
-
-  @override
-  Widget build(BuildContext context) {
-    final isNarration = line.speaker.name.isEmpty;
-    final textStyle = TextStyle(
-      color: isNarration ? NeonPalette.textDim : NeonPalette.textBright,
-      fontSize: isNarration ? 15 : 17,
-      height: 1.45,
-      fontStyle: isNarration || line.speaker.italic ? FontStyle.italic : FontStyle.normal,
-    );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (!isNarration)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 3),
-              child: Text(line.speaker.name,
-                  style: TextStyle(
-                      color: line.speaker.color, fontSize: 13, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
-            ),
-          typing ? TypingText(line.text, style: textStyle) : Text(line.text, style: textStyle),
-        ],
       ),
     );
   }

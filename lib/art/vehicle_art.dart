@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import '../core/palette.dart';
 import '../story/models/dialogue.dart';
+import '../story/models/level_config.dart';
 import 'character_art.dart';
 import 'neon.dart';
 

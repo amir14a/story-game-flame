@@ -1,11 +1,13 @@
 import '../core/overlay_ids.dart';
+import '../story/models/cutscene_config.dart';
 import '../story/models/episode.dart';
 import '../story/models/level_config.dart';
 import 'neon_echo_game.dart';
+import 'scenes/cutscene_scene.dart';
 import 'scenes/level_scene.dart';
 
 /// Drives the screenplay. Given the current episode/phase in [GameState], it
-/// presents the right thing — a cutscene overlay or a playable [LevelScene] —
+/// presents the right thing — an in-game cutscene or a playable [LevelScene] —
 /// and advances when a phase reports completion. This is the only place that
 /// knows the order of beats, keeping both the engine and the UI dumb.
 class StoryDirector {
@@ -16,7 +18,7 @@ class StoryDirector {
   static const List<String> _allStoryOverlays = [
     OverlayIds.mainMenu,
     OverlayIds.episodeSelect,
-    OverlayIds.cutscene,
+    OverlayIds.cutsceneHud,
     OverlayIds.hud,
     OverlayIds.dialogue,
     OverlayIds.levelCleared,
@@ -52,33 +54,35 @@ class StoryDirector {
     final phase = _phase;
     switch (phase) {
       case CutscenePhase():
-        game.enterOverlayMode();
-        game.currentCutscene = phase.cutscene;
-        _setOverlay(OverlayIds.cutscene);
+        _loadCutscene(phase.config);
       case LevelPhase():
         _loadLevel(phase.config);
     }
   }
 
-  void _loadLevel(LevelConfig config) {
-    game.currentCutscene = null;
-    _setLevelOverlays();
-    game.world = LevelScene(config, episodeLabel: 'EPISODE ${_episode.number} · ${_episode.title}');
-    game.enterLevelMode();
+  void _loadCutscene(CutsceneConfig config) {
+    _clearAllOverlays();
+    game.world = CutsceneScene(config);
+    game.enterCutsceneMode();
   }
 
-  /// Levels show the HUD and the in-game dialogue layer together.
-  void _setLevelOverlays() {
-    for (final name in _allStoryOverlays) {
-      game.overlays.remove(name);
-    }
-    game.overlays.remove(OverlayIds.pause);
+  void _loadLevel(LevelConfig config) {
+    _clearAllOverlays();
+    game.world = LevelScene(config, episodeLabel: 'EPISODE ${_episode.number} · ${_episode.title}');
+    game.enterLevelMode();
     game.overlays.add(OverlayIds.hud);
     game.overlays.add(OverlayIds.dialogue);
   }
 
+  void _clearAllOverlays() {
+    for (final name in _allStoryOverlays) {
+      game.overlays.remove(name);
+    }
+    game.overlays.remove(OverlayIds.pause);
+  }
+
   // --------------------------------------------------------------- advance
-  /// Called by the cutscene overlay's continue button, and after a level clear.
+  /// Called by the cutscene continue button, and after a level clear.
   void advance() {
     game.state.phaseIndex++;
     if (game.state.phaseIndex >= _episode.phases.length) {

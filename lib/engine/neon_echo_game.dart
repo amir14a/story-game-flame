@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart' show KeyEventResult;
 import '../art/city/city_backdrop.dart';
 import '../core/game_config.dart';
 import '../core/input/game_input.dart';
-import '../story/models/dialogue.dart';
 import '../story/models/level_config.dart';
 import '../story/story_repository.dart';
 import 'controls.dart';
@@ -36,7 +35,6 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
   late final Controls controls;
 
   DistrictTheme backdropTheme = DistrictTheme.rooftops;
-  Cutscene? currentCutscene;
 
   bool _inLevel = false;
   bool _paused = false;
@@ -79,6 +77,16 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
     _inLevel = true;
     _paused = false;
     controls.active = true;
+    resumeEngine();
+  }
+
+  /// Cutscene mode: engine runs (for animations / beat timing) but player
+  /// controls are hidden and input is cleared.
+  void enterCutsceneMode() {
+    _inLevel = false;
+    _paused = false;
+    input.clear();
+    controls.active = false;
     resumeEngine();
   }
 

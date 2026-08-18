@@ -1,4 +1,5 @@
 import '../level_builders.dart';
+import '../models/cutscene_config.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
@@ -12,70 +13,79 @@ Episode buildEpisodeFive() {
     tagline: 'THE APEX · CLIMB · PARKOUR · SHOOT · SWIM',
     theme: DistrictTheme.spire,
     phases: [
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 5',
         location: 'THE APEX · THE ONLY REAL SKY LEFT',
         mood: CutsceneMood.present,
-        narration: [
-          'There is one way to stop the cycle: the override at the crown of the Apex, '
-              'where Saint sits beneath the last real sky in Verge City. James climbs.',
-        ],
-        lines: [
-          DialogueLine(Speakers.books, '(comm) I\'ll hold the lifts and the doors for you. Whatever it costs.'),
-          DialogueLine(Speakers.james, '(comm) Books—'),
-          DialogueLine(Speakers.books, '(comm) Climb, son. Go get your sister.'),
+        theme: DistrictTheme.spire,
+        beats: [
+          NarrationBeat('There is one way to stop the cycle: the override at the crown of the Apex, '
+              'where Saint sits beneath the last real sky in Verge City. James climbs.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.books, '(comm) I\'ll hold the lifts and the doors for you. Whatever it costs.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(comm) Books—')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.books, '(comm) Climb, son. Go get your sister.')),
         ],
         continueLabel: 'CLIMB TO THE TOP OF THE WORLD',
       )),
       LevelPhase(_apexAscent()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'FLASHBACK',
         location: 'A SINK ROOFTOP · THE LULLABY',
         mood: CutsceneMood.flashback,
-        narration: [
-          'As he climbs, the oldest memory surfaces — Mara at the window, the two of '
-              'them counting lit windows like a sky.',
-        ],
-        lines: [
-          DialogueLine(Speakers.mara, 'Count the stars with me. I\'ll always be one of them.'),
-          DialogueLine(Speakers.narrator, 'You are Millie. Walk out to the edge and count them.'),
+        theme: DistrictTheme.lowtownNight,
+        beats: [
+          NarrationBeat('As he climbs, the oldest memory surfaces — Mara at the window, the two of '
+              'them counting lit windows like a sky.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.mara, 'Count the stars with me. I\'ll always be one of them.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'You are Millie. Walk out to the edge and count them.')),
         ],
         continueLabel: 'PLAY AS MILLIE',
       )),
       LevelPhase(_countingStarsFlashback()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'THE CROWN',
         location: 'THE SUMMIT DATA-CORE · DAWN BREAKING',
         mood: CutsceneMood.present,
-        narration: [
-          'James reaches the crown, frees Millie from the core, and together they '
+        theme: DistrictTheme.spire,
+        beats: [
+          NarrationBeat('James reaches the crown, frees Millie from the core, and together they '
               'finish what she started — her exploit and the wall of evidence, '
-              'broadcast to every screen in the city at once.',
-          'The lights of Verge City flicker — and come up like stars. Then the '
-              'wounded spire begins to flood and fall.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, 'It\'s uploading. It\'s actually— James, it\'s working.'),
-          DialogueLine(Speakers.james, 'Then we don\'t stay to watch. Move — the whole crown\'s coming down.'),
+              'broadcast to every screen in the city at once.'),
+          PauseBeat(1.0),
+          NarrationBeat('The lights of Verge City flicker — and come up like stars. Then the '
+              'wounded spire begins to flood and fall.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, 'It\'s uploading. It\'s actually— James, it\'s working.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, 'Then we don\'t stay to watch. Move — the whole crown\'s coming down.')),
         ],
         continueLabel: 'GET HER OUT',
       )),
       LevelPhase(_apexEscape()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'THE TOP OF THE WORLD',
         location: 'THE BROKEN LIP OF THE APEX · SUNRISE',
         mood: CutsceneMood.victory,
-        narration: [
-          'Dawn, on the broken edge of the Apex, the city laid out below and — for '
+        theme: DistrictTheme.spire,
+        beats: [
+          NarrationBeat('Dawn, on the broken edge of the Apex, the city laid out below and — for '
               'the first time in years — actually visible. Millie is alive: thinner, '
-              'scarred, changed. But hers.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, 'You climbed to the top of the world.'),
-          DialogueLine(Speakers.james, 'You said you\'d find me here. Figured I\'d save you the walk.'),
-          DialogueLine(Speakers.narrator, 'She presses the last crane into his scarred hand and finishes the lullaby.'),
-          DialogueLine(Speakers.millie, 'Count the stars with me, big brother.'),
-          DialogueLine(Speakers.james, 'All of them. We\'ve got time.'),
+              'scarred, changed. But hers.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, 'You climbed to the top of the world.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, 'You said you\'d find me here. Figured I\'d save you the walk.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'She presses the last crane into his scarred hand and finishes the lullaby.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.millie, 'Count the stars with me, big brother.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, 'All of them. We\'ve got time.')),
         ],
         continueLabel: 'THE END',
       )),

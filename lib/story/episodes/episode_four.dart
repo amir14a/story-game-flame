@@ -1,4 +1,5 @@
 import '../level_builders.dart';
+import '../models/cutscene_config.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
@@ -12,64 +13,69 @@ Episode buildEpisodeFour() {
     tagline: 'THE FOUNDRY · RIDE · SHOOT · CLIMB · RUN',
     theme: DistrictTheme.steelVeins,
     phases: [
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 4',
         location: 'THE FOUNDRY GATES · RAIN AND SODIUM LIGHT',
         mood: CutsceneMood.present,
-        narration: [
-          'Guilt is the engine now. They took Millie because James led them to her. '
+        theme: DistrictTheme.steelVeins,
+        beats: [
+          NarrationBeat('Guilt is the engine now. They took Millie because James led them to her. '
               'The only thing left is to finish what she started — at Saint-Cloud\'s '
-              'processing plant, deep in the Foundry.',
-        ],
-        lines: [
-          DialogueLine(Speakers.books, '(comm) This isn\'t your fault, James.'),
-          DialogueLine(Speakers.james, '(comm) It\'s exactly my fault. Find me a way in.'),
+              'processing plant, deep in the Foundry.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.books, '(comm) This isn\'t your fault, James.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(comm) It\'s exactly my fault. Find me a way in.')),
         ],
         continueLabel: 'RIDE',
       )),
       LevelPhase(_foundryRide()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'INSIDE THE PLANT',
         location: 'SAINT-CLOUD PROCESSING · THE CATWALKS',
         mood: CutsceneMood.present,
-        narration: [
-          'James ditches the bike at the loading dock and climbs into the plant — '
-              'and sees plainly what "processing" means here.',
-        ],
-        lines: [
-          DialogueLine(Speakers.narrator, 'Climb the rigging, run the catwalks, and fight to the core.'),
+        theme: DistrictTheme.steelVeins,
+        beats: [
+          NarrationBeat('James ditches the bike at the loading dock and climbs into the plant — '
+              'and sees plainly what "processing" means here.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'Climb the rigging, run the catwalks, and fight to the core.')),
         ],
         continueLabel: 'CLIMB IN',
       )),
       LevelPhase(_foundryPlant()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'FLASHBACK',
         location: 'SAINT-CLOUD INTAKE · WEEKS AGO',
         mood: CutsceneMood.flashback,
-        narration: [
-          'How the Ghost got inside. Millie, walking willingly into the intake — '
-              'choosing capture to plant her exploit at the core, knowing the cost.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, 'One way in that they\'ll never expect. The front door.'),
-          DialogueLine(Speakers.narrator, 'You are Millie. Walk in, and leave the next crane on the threshold.'),
+        theme: DistrictTheme.steelVeins,
+        beats: [
+          NarrationBeat('How the Ghost got inside. Millie, walking willingly into the intake — '
+              'choosing capture to plant her exploit at the core, knowing the cost.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, 'One way in that they\'ll never expect. The front door.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'You are Millie. Walk in, and leave the next crane on the threshold.')),
         ],
         continueLabel: 'PLAY AS MILLIE',
       )),
       LevelPhase(_bargainFlashback()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 4 — ENDING',
         location: 'THE PROCESSING CORE',
         mood: CutsceneMood.cliffhanger,
-        narration: [
-          'James reaches the core a breath too late. The cycle has started — and '
-              'Millie is inside it. Every screen blooms with a calm, kind voice.',
-        ],
-        lines: [
-          DialogueLine(Speakers.saint, 'You brought her home to me, James. Thank you.'),
-          DialogueLine(Speakers.saint, 'Now stand very still, and watch.'),
-          DialogueLine(Speakers.narrator, 'The core seals. The lights go red.'),
-          DialogueLine(Speakers.james, 'No. NO — the Apex. The override\'s at the top. I\'m coming up.'),
+        theme: DistrictTheme.steelVeins,
+        beats: [
+          NarrationBeat('James reaches the core a breath too late. The cycle has started — and '
+              'Millie is inside it. Every screen blooms with a calm, kind voice.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.saint, 'You brought her home to me, James. Thank you.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.saint, 'Now stand very still, and watch.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'The core seals. The lights go red.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, 'No. NO — the Apex. The override\'s at the top. I\'m coming up.')),
         ],
         continueLabel: 'EPISODE 5 ▶',
       )),

@@ -18,6 +18,10 @@ enum VehicleKind { onFoot, car, bike }
 /// District look used by the backdrop / parallax painter.
 enum DistrictTheme { rooftops, skyway, sunken, steelVeins, spire, reservoir, lowtownNight }
 
+/// The pose a humanoid figure is drawn in. The artist interpolates limb
+/// positions from a continuous time value so movement reads as fluid.
+enum CharacterPose { idle, run, jump, fall, swim, climb, aim, seated }
+
 // ---------------------------------------------------------------------------
 // Terrain features — declarative building blocks turned into static bodies.
 // ---------------------------------------------------------------------------

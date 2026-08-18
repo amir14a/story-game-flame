@@ -1,4 +1,5 @@
 import '../level_builders.dart';
+import '../models/cutscene_config.dart';
 import '../models/dialogue.dart';
 import '../models/episode.dart';
 import '../models/level_config.dart';
@@ -12,52 +13,56 @@ Episode buildEpisodeThree() {
     tagline: 'THE FLOODWORKS · SWIM · CLIMB · SHOOT · RUN',
     theme: DistrictTheme.sunken,
     phases: [
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 3',
         location: 'THE FLOODWORKS · A DROWNED AVENUE',
         mood: CutsceneMood.present,
-        narration: [
-          'James surfaces where streets have become canals and a cathedral stands '
+        theme: DistrictTheme.sunken,
+        beats: [
+          NarrationBeat('James surfaces where streets have become canals and a cathedral stands '
               'up to its shoulders in black water. Somewhere in here is the sister '
-              'who begged him not to come.',
-        ],
-        lines: [
-          DialogueLine(Speakers.james, 'Hold on, Mil. I\'m already here.'),
-          DialogueLine(Speakers.narrator, 'Swim the flooded streets, climb the rigging, fight through to the cathedral.'),
+              'who begged him not to come.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.james, 'Hold on, Mil. I\'m already here.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'Swim the flooded streets, climb the rigging, fight through to the cathedral.')),
         ],
         continueLabel: 'DIVE',
       )),
       LevelPhase(_floodworks()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'FLASHBACK',
         location: 'THE SINK · THE NIGHT OF THE COLLAPSE',
         mood: CutsceneMood.flashback,
-        narration: [
-          'The memory she never speaks of. Twelve years old, searching the rubble '
-              'where the transit line came down — where their parents were.',
-        ],
-        lines: [
-          DialogueLine(Speakers.narrator, 'You are Millie. Search the wreckage.'),
+        theme: DistrictTheme.lowtownNight,
+        beats: [
+          NarrationBeat('The memory she never speaks of. Twelve years old, searching the rubble '
+              'where the transit line came down — where their parents were.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.narrator, 'You are Millie. Search the wreckage.')),
         ],
         continueLabel: 'PLAY AS MILLIE',
       )),
       LevelPhase(_questionFlashback()),
-      const CutscenePhase(Cutscene(
+      CutscenePhase(CutsceneConfig(
         title: 'EPISODE 3 — ENDING',
         location: 'THE COMMAND POST',
         mood: CutsceneMood.cliffhanger,
-        narration: [
-          'Before James can say half of what he came to say, the wall comes down — '
+        theme: DistrictTheme.sunken,
+        beats: [
+          NarrationBeat('Before James can say half of what he came to say, the wall comes down — '
               'Cray\'s strike team, breaching the post. They followed James here. His '
-              'search is the thing that finally found her.',
-        ],
-        lines: [
-          DialogueLine(Speakers.millie, 'No—no, you led them straight to— get DOWN—'),
-          DialogueLine(Speakers.narrator,
+              'search is the thing that finally found her.'),
+          PauseBeat(1.0),
+          DialogueBeat(DialogueLine(Speakers.millie, 'No—no, you led them straight to— get DOWN—')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.narrator,
               'Millie doesn\'t fight; fighting would expose what she\'s hidden in their '
-              'network. She presses one last crane into James\'s hand.'),
-          DialogueLine(Speakers.millie, 'The Foundry. Finish it for me.'),
-          DialogueLine(Speakers.james, '(reaching) MILLIE—'),
+              'network. She presses one last crane into James\'s hand.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.millie, 'The Foundry. Finish it for me.')),
+          PauseBeat(0.8),
+          DialogueBeat(DialogueLine(Speakers.james, '(reaching) MILLIE—')),
         ],
         continueLabel: 'EPISODE 4 ▶',
       )),

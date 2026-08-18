@@ -53,24 +53,3 @@ enum CutsceneMood {
   /// Golden dawn resolution.
   victory,
 }
-
-/// A scripted, full-screen story beat shown as a Flutter overlay between
-/// playable phases (episode intro / flashback intro / cliffhanger / finale).
-@immutable
-class Cutscene {
-  const Cutscene({
-    required this.title,
-    required this.location,
-    required this.mood,
-    this.narration = const [],
-    this.lines = const [],
-    this.continueLabel = 'CONTINUE',
-  });
-
-  final String title;
-  final String location;
-  final CutsceneMood mood;
-  final List<String> narration;
-  final List<DialogueLine> lines;
-  final String continueLabel;
-}

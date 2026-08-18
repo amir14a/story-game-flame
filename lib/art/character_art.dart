@@ -6,10 +6,6 @@ import '../story/models/dialogue.dart';
 import '../story/models/level_config.dart';
 import 'neon.dart';
 
-/// The pose a humanoid figure is drawn in. The artist interpolates limb
-/// positions from a continuous time value so movement reads as fluid.
-enum CharacterPose { idle, run, jump, fall, swim, climb, aim, seated }
-
 /// Per-character silhouette so the siblings actually look different — not just
 /// recoloured. James (brother) is taller and broad-shouldered with cropped hair,
 /// a hood collar and a courier satchel; Millie (sister) is slighter with a
