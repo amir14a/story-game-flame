@@ -7,6 +7,7 @@ import 'package:flutter/painting.dart' show InlineSpan, TextStyle, TextSpan, Tex
 
 import '../../art/character_art.dart';
 import '../../art/lighting.dart';
+import '../../core/overlay_ids.dart';
 import '../../core/palette.dart';
 import '../../story/models/cutscene_config.dart';
 import '../../story/models/dialogue.dart';
@@ -363,9 +364,9 @@ class CutsceneScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
 
   void _showOverlay(bool show, {bool showContinue = false}) {
     if (show) {
-      game.overlays.add('cutsceneHud');
+      game.overlays.add(OverlayIds.cutsceneHud);
     } else {
-      game.overlays.remove('cutsceneHud');
+      game.overlays.remove(OverlayIds.cutsceneHud);
     }
     _showingContinue = showContinue;
   }
