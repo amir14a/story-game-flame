@@ -67,6 +67,11 @@ In **debug builds only**, the classic Konami code unlocks every episode:
 `↑ ↑ ↓ ↓ ← → ← → B A`. The menu and episode-select screens show a hint for it.
 It is compiled out of release builds (`kDebugMode`).
 
+Typing `DEBUG` on the keyboard unlocks the hidden cutscene test menu — a
+devtools screen for jumping straight into any cutscene in any episode. Unlike
+the Konami code above, this one works in **release builds too**, since it's
+the only way to reach the devtools outside of a debug build.
+
 ---
 
 ## Running the project

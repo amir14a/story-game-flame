@@ -9,6 +9,17 @@ import '../../engine/neon_echo_game.dart';
 import '../../story/models/level_config.dart';
 import '../neon.dart';
 
+/// The vertical parallax offset (in screen pixels) applied to a backdrop
+/// skyline layer for a given camera y (world metres) and parallax [depth].
+///
+/// Coordinate reality: up is −y (gravity is +y), so a jump makes the followed
+/// camera's [camY] *decrease*. A fixed structure must then appear to slide
+/// *down* the screen (where larger y is lower). We add this shift to the
+/// layer's baseline, so it must *increase* as [camY] decreases — hence the
+/// negation. (Using +camY here is the "structures move up on jump" bug.)
+double parallaxVShift(double camY, double depth) =>
+    -camY * GameConfig.zoom * depth * 0.5;
+
 /// A per-district atmospheric backdrop drawn entirely in vector. It is set as
 /// the camera's [backdrop] so it renders statically behind the world, in screen
 /// pixels, and reads the camera position to fake multi-layer parallax.
@@ -95,7 +106,7 @@ class CityBackdrop extends Component with HasGameReference<NeonEchoGame> {
     required double gap,
   }) {
     final scroll = cam.x * GameConfig.zoom * depth;
-    final vShift = cam.y * GameConfig.zoom * depth * 0.5;
+    final vShift = parallaxVShift(cam.y, depth);
     final baseY = size.y * base + vShift;
     final span = size.x + gap * 2;
     final start = -(scroll % gap) - gap;

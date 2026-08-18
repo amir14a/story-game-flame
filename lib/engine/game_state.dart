@@ -15,6 +15,11 @@ class GameState extends ChangeNotifier {
   /// Highest episode number (1-based) the player has unlocked.
   int unlockedEpisode = 1;
 
+  /// Unlocked by a hidden main-menu touch gesture (see [MainMenuOverlay]) so
+  /// the cutscene test menu is reachable in release builds too, not just debug
+  /// ones.
+  bool debugToolsUnlocked = false;
+
   // ---- live level values (HUD) ------------------------------------------
   Character activeCharacter = Character.james;
   String episodeTitle = '';
@@ -66,6 +71,16 @@ class GameState extends ChangeNotifier {
       return;
     }
     unlockedEpisode = episodeCount;
+    notifyListeners();
+  }
+
+  /// Unlocks the debug cutscene test menu outside of debug builds (used by
+  /// the hidden main-menu touch gesture).
+  void unlockDebugTools() {
+    if (debugToolsUnlocked) {
+      return;
+    }
+    debugToolsUnlocked = true;
     notifyListeners();
   }
 

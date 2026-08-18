@@ -134,6 +134,7 @@ class LevelScene extends Forge2DWorld with HasGameReference<NeonEchoGame> {
 
   void _setupCamera() {
     final camera = game.camera;
+    camera.stop();
     camera.viewfinder.position = Vector2(config.start.x, config.start.y + GameConfig.cameraLeadY);
     camera.follow(player, maxSpeed: GameConfig.cameraMaxSpeed);
     camera.setBounds(

@@ -18,6 +18,7 @@ class StoryDirector {
   static const List<String> _allStoryOverlays = [
     OverlayIds.mainMenu,
     OverlayIds.episodeSelect,
+    OverlayIds.cutsceneTestMenu,
     OverlayIds.cutsceneHud,
     OverlayIds.hud,
     OverlayIds.dialogue,
@@ -40,12 +41,26 @@ class StoryDirector {
     _setOverlay(OverlayIds.episodeSelect);
   }
 
+  /// Debug-only cutscene test menu (see [OverlayIds.cutsceneTestMenu]).
+  void showCutsceneTestMenu() {
+    game.enterOverlayMode();
+    _setOverlay(OverlayIds.cutsceneTestMenu);
+  }
+
   void startNewGame() => startEpisode(1);
 
   /// Begins an episode from its first phase ([number] is 1-based).
   void startEpisode(int number) {
     game.state.episodeIndex = (number - 1).clamp(0, game.story.episodeCount - 1);
     game.state.phaseIndex = 0;
+    _present();
+  }
+
+  /// Debug-only: jump straight to a specific phase of a specific episode
+  /// (used by the cutscene test menu). Indices are 0-based.
+  void jumpToPhase(int episodeIndex, int phaseIndex) {
+    game.state.episodeIndex = episodeIndex.clamp(0, game.story.episodeCount - 1);
+    game.state.phaseIndex = phaseIndex.clamp(0, _episode.phases.length - 1);
     _present();
   }
 

@@ -30,6 +30,18 @@ class PauseBeat extends CutsceneBeat {
   final double duration;
 }
 
+/// Place a character at a starting position instantly (no walk animation).
+/// Use this before a [MoveCharacterBeat] so the character visibly walks from
+/// somewhere rather than appearing already at its destination.
+class PlaceCharacterBeat extends CutsceneBeat {
+  const PlaceCharacterBeat(this.character, {required this.x, required this.y, this.facing = 1, this.pose = CharacterPose.idle});
+  final Character character;
+  final double x;
+  final double y;
+  final int facing;
+  final CharacterPose pose;
+}
+
 /// Move a character to a target position with a given pose. The character
 /// walks/runs there; the beat completes when the character arrives.
 class MoveCharacterBeat extends CutsceneBeat {
@@ -61,6 +73,18 @@ class PoseBeat extends CutsceneBeat {
   final CharacterPose pose;
 }
 
+/// Spawn a narrative prop (a paper crane, a comm-marker, etc) into the
+/// cutscene world at a fixed position. Purely decorative — no physics.
+class SpawnPropBeat extends CutsceneBeat {
+  const SpawnPropBeat(this.kind, {required this.x, required this.y});
+  final CutscenePropKind kind;
+  final double x;
+  final double y;
+}
+
+/// The kinds of narrative object that can appear inside a cutscene.
+enum CutscenePropKind { paperCrane, dataShard, streetLamp, windowLights }
+
 // ---------------------------------------------------------------------------
 // CutsceneConfig — the full description of an in-game cutscene.
 // ---------------------------------------------------------------------------
@@ -76,6 +100,8 @@ class CutsceneConfig {
     required this.beats,
     this.worldWidth = 40,
     this.continueLabel = 'CONTINUE',
+    this.props = const [],
+    this.groundY = 10.0,
   });
 
   final String title;
@@ -92,4 +118,21 @@ class CutsceneConfig {
 
   /// Label on the continue button shown after all beats finish.
   final String continueLabel;
+
+  /// Props present in the world from the start (see also [SpawnPropBeat] for
+  /// ones that appear mid-scene).
+  final List<PropPlacement> props;
+
+  /// The y-coordinate (world metres) of the ground/floor line characters and
+  /// props stand on — matched against the following level's [start] point so
+  /// the cutscene's final frame sits at the same height as gameplay begins.
+  final double groundY;
+}
+
+/// A prop present in the cutscene world from load time.
+class PropPlacement {
+  const PropPlacement(this.kind, {required this.x, required this.y});
+  final CutscenePropKind kind;
+  final double x;
+  final double y;
 }

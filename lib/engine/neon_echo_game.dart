@@ -20,11 +20,7 @@ import 'story_director.dart';
 /// Owns the cross-cutting singletons — input, state, the story, the
 /// [StoryDirector] and the in-game [DialogueRunner] — and routes keyboard input.
 class NeonEchoGame extends Forge2DGame with KeyboardEvents {
-  NeonEchoGame()
-      : super(
-          gravity: GameConfig.gravity,
-          zoom: GameConfig.zoom,
-        );
+  NeonEchoGame() : super(gravity: GameConfig.gravity, zoom: GameConfig.zoom);
 
   final GameInput input = GameInput();
   final GameState state = GameState();
@@ -118,7 +114,10 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
 
   // --------------------------------------------------------------- keyboard
   static final _left = {LogicalKeyboardKey.keyA, LogicalKeyboardKey.arrowLeft};
-  static final _right = {LogicalKeyboardKey.keyD, LogicalKeyboardKey.arrowRight};
+  static final _right = {
+    LogicalKeyboardKey.keyD,
+    LogicalKeyboardKey.arrowRight,
+  };
   static final _up = {LogicalKeyboardKey.keyW, LogicalKeyboardKey.arrowUp};
   static final _down = {LogicalKeyboardKey.keyS, LogicalKeyboardKey.arrowDown};
   static final _fire = {
@@ -169,8 +168,14 @@ class NeonEchoGame extends Forge2DGame with KeyboardEvents {
     }
   }
 
+  // The debug cutscene test menu is unlocked via a hidden touch gesture on the
+  // main menu (see MainMenuOverlay) so it is reachable on touch devices too.
+
   @override
-  KeyEventResult onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+  KeyEventResult onKeyEvent(
+    KeyEvent event,
+    Set<LogicalKeyboardKey> keysPressed,
+  ) {
     _checkCheat(event);
 
     // While a blocking exchange is up, the action keys advance it.
